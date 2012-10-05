@@ -66,15 +66,17 @@ class TemplatesController < ApplicationController
 			
 			template.set(@destination_line, 'AA', "#{source.cell(source_line,'K')}")
 			
+			#p "#{source.cell(source_line,'AX')}".gsub(/ /, "")
+			
 			# Discontinued: it affects the product STATUS
 			# If Yes, STATUS = 2, else STATUS = 1
-			if "#{source.cell(source_line,'AR')}" == "Y"
+			if "#{source.cell(source_line,'AR')}".gsub(/ /, "") == "Y"
 				template.set(@destination_line, 'AB', "Yes")
 
 				# Status
 				template.set(@destination_line, 'CA', "2")
 			end
-			if "#{source.cell(source_line,'AR')}" == "N"
+			if "#{source.cell(source_line,'AR')}".gsub(/ /, "") == "N"
 				template.set(@destination_line, 'AB', "No")
 				
 				# Status
@@ -83,13 +85,13 @@ class TemplatesController < ApplicationController
 			
 			# Do Not Display: it affects the product VISIBILITY
 			# If Yes, visibility = 1 else visibility = 4
-			if "#{source.cell(source_line,'AX')}" == "1"
+			if "#{source.cell(source_line,'AX')}".gsub(/ /, "") == "1.0"
 				template.set(@destination_line, 'AC', "Yes")
 				
 				# Visibility
 				template.set(@destination_line, 'CI', "1")
 			end
-			if "#{source.cell(source_line,'AX')}" == "0"
+			if "#{source.cell(source_line,'AX')}".gsub(/ /, "") == "0.0"
 				template.set(@destination_line, 'AC', "No")
 				
 				# Visibility
@@ -146,11 +148,22 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, 'AM', "#{source.cell(source_line,'O')}")
 			template.set(@destination_line, 'AN', "#{source.cell(source_line,'P')}")
 			
+			# Has Options
+			template.set(@destination_line, 'AJ', "0")
+			
 			# Keywords
 			template.set(@destination_line, 'AO', "#{source.cell(source_line,'AK')}")
 			
 			# LLC Stock
 			template.set(@destination_line, 'AP', "#{source.cell(source_line,'G')}")
+			
+			# Meta Description, Meta Keyword, Meta Title
+			template.set(@destination_line, 'AT', "#{source.cell(source_line,'K')}")
+			template.set(@destination_line, 'AU', "#{source.cell(source_line,'AK')}")
+			template.set(@destination_line, 'AV', "#{source.cell(source_line,'K')}")
+			
+			# Modified By
+			template.set(@destination_line, 'AX', "#{source.cell(source_line,'AO')}")
 			
 			# Title
 			template.set(@destination_line, 'BC', "#{source.cell(source_line,'K')}")
@@ -209,7 +222,7 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, 'BQ', "0")
 			
 			# Short Description
-			template.set(@destination_line, 'BR', "K")
+			template.set(@destination_line, 'BR', "#{source.cell(source_line,'K')}")
 			
 			# Size Category
 			template.set(@destination_line, 'BT', "#{source.cell(source_line,'AG')}")
@@ -232,8 +245,11 @@ class TemplatesController < ApplicationController
 			# Thumbnail Label
 			template.set(@destination_line, 'CD', "#{source.cell(source_line,'K')}")
 			
-			# Title
+			# Small Image Label
 			template.set(@destination_line, 'BV', "#{source.cell(source_line,'K')}")
+			
+			# Title
+			template.set(@destination_line, 'CE', "#{source.cell(source_line,'K')}")
 			
 			# URL Key
 			@url_key = "#{source.cell(source_line,'K')}";
@@ -243,6 +259,9 @@ class TemplatesController < ApplicationController
 			# URL Path
 			@url_path = @url_key + ".html"
 			template.set(@destination_line, 'CH', "#{@url_path}")
+			
+			# Weight
+			template.set(@destination_line, 'CJ', "1.0")
 			
 			# Weight
 			template.set(@destination_line, 'CK', "0")
