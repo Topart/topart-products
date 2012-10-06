@@ -29,7 +29,7 @@ class TemplatesController < ApplicationController
 			
 			template.set(@destination_line, 'C', "Topart - Special Products")
 			template.set(@destination_line, 'D', "simple")
-			template.set(@destination_line, 'E', "Collections/Oscar Night")
+			template.set(@destination_line, 'E', "COLLECTIONS/Oscar Night")
 			template.set(@destination_line, 'F', "Root Category")
 			template.set(@destination_line, 'G', "base")
 			
@@ -184,8 +184,8 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, 'BH', "No")
 			end
 
-			# Page
-			template.set(@destination_line, 'BI', "#{source.cell(source_line,'AE')}")
+			# Page: skip this
+			#template.set(@destination_line, 'BI', "#{source.cell(source_line,'AE')}")
 			
 			# Page Size CM
 			template.set(@destination_line, 'BK', "#{source.cell(source_line,'M')}")
