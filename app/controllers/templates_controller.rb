@@ -8,11 +8,13 @@ class TemplatesController < ApplicationController
 	def index
  
 		# Load the source Excel file, with all the special products info
-		source = Excelx.new("http://beta.topart.com/csv/Template - 2012-11-28/source.xls")
+		#source = Excel.new("http://beta.topart.com/csv/Template_2012_11_28/source.xls")
+		source = Excel.new("Template_2012_11_28/source.xls")
 		source.default_sheet = source.sheets.first
 		
 		# Load the Magento template, which is in Open Office format
-		template = Openoffice.new("http://beta.topart.com/csv/Template - 2012-11-28/template.ods")
+		#template = Openoffice.new("http://beta.topart.com/csv/Template_2012_11_28/template.ods")
+		template = Openoffice.new("Template_2012_11_28/template.ods")
 		template.default_sheet = template.sheets.first
 		
 		# Color set
@@ -23,6 +25,7 @@ class TemplatesController < ApplicationController
 		
 		@destination_line = 2
 		2.upto(source.last_row) do |source_line|
+		#2.upto(100) do |source_line|
 		
 			# Sku: insert a "_" after the last character in the string
 			original_sku = "#{source.cell(source_line,'A')}"
@@ -40,9 +43,6 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, 'I', "#{source.cell(source_line,'K')}")
 			template.set(@destination_line, 'J', "#{source.cell(source_line,'L')}")
 			template.set(@destination_line, 'K', "#{source.cell(source_line,'M')}")
-			
-			# Artist Full Name
-			template.set(@destination_line, 'N', "#{source.cell(source_line,'C')}")
 			
 			# Color: Look into "keywords" and search for colors...
 			# ...and add each color to the same column but on one @destination_line below
@@ -153,7 +153,11 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, 'AY', "Block after Info Column")
 
 			#Oversize
-			template.set(@destination_line, 'AZ', "#{source.cell(source_line,'N')}")
+			if "#{source.cell(source_line,'N')}" == "Y"
+				template.set(@destination_line, 'AZ', "#{source.cell(source_line,'Yes')}")
+			else
+				template.set(@destination_line, 'AZ', "#{source.cell(source_line,'No')}")
+			end
 
 			#Paper size cm
 			template.set(@destination_line, 'BC', "#{source.cell(source_line,'F')}")
@@ -162,7 +166,11 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, 'BE', "#{source.cell(source_line,'G')}")
 
 			#A4POD
-			template.set(@destination_line, 'BF', "#{source.cell(source_line,'V')}")
+			if "#{source.cell(source_line,'V')}" == "Y"
+				template.set(@destination_line, 'BF', "Yes")
+			else
+				template.set(@destination_line, 'BF', "No")
+			end
 
 			#Price
 			template.set(@destination_line, 'BG', "#{source.cell(source_line,'E')}")
@@ -182,8 +190,8 @@ class TemplatesController < ApplicationController
 			#Size category: for posters
 			@paper_size_cm = "#{source.cell(source_line,'F')}"
 			
-			@width = @paper_size_cm.gsub(/ x .[0-9]/, "").to_f
-			@height = @paper_size_cm.gsub(/.[0-9] x /, "").to_f
+			@width = @paper_size_cm.gsub(/ x .[0-9]/, "")
+			@height = @paper_size_cm.gsub(/.[0-9] x /, "")
 
 			@ui = @width + @height;
 
@@ -219,58 +227,94 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, 'BR', "2")
 
 			#total_quantity_on_hand
-			template.set(@destination_line, 'BV', "#{source.cell(source_line,'AE')}")
+			if "#{source.cell(source_line,'A')}" =~ /DG$/ 
+				template.set(@destination_line, 'BV', "0")
+			else
+				template.set(@destination_line, 'BV', "#{source.cell(source_line,'AE')}")
+			end
 
 			#udf_anycustom
-			template.set(@destination_line, 'BW', "#{source.cell(source_line,'AR')}")
+			if "#{source.cell(source_line,'AR')}" == "Y"
+				template.set(@destination_line, 'BW', "Yes")
+			else
+				template.set(@destination_line, 'BW', "No")
+			end
 
 			#Artist name
 			template.set(@destination_line, 'BX', "#{source.cell(source_line,'C')}")
 
 			#Copyright
-			template.set(@destination_line, 'BY', "#{source.cell(source_line,'AP')}")
+			if "#{source.cell(source_line,'AP')}" == "Y"
+				template.set(@destination_line, 'BY', "Yes")
+			else
+				template.set(@destination_line, 'BY', "No")
+			end
 
-			#udf_anycustom
+			#udf_crline
 			template.set(@destination_line, 'BZ', "#{source.cell(source_line,'AQ')}")
 
-			#udf_anycustom
-			template.set(@destination_line, 'BW', "#{source.cell(source_line,'AR')}")
-
 			#udf_dnd
-			template.set(@destination_line, 'CB', "#{source.cell(source_line,'X')}")
+			if "#{source.cell(source_line,'X')}" == "Y"
+				template.set(@destination_line, 'CB', "Yes")
+			else
+				template.set(@destination_line, 'CB', "No")
+			end
 
 			#udf_embellished
-			template.set(@destination_line, 'CC', "#{source.cell(source_line,'AG')}")
+			if "#{source.cell(source_line,'AG')}" == "Y"
+				template.set(@destination_line, 'CC', "Yes")
+			else
+				template.set(@destination_line, 'CC', "No")
+			end
 
 			#udf_framed
-			template.set(@destination_line, 'CD', "#{source.cell(source_line,'AH')}")
+			if "#{source.cell(source_line,'AH')}" == "Y"
+				template.set(@destination_line, 'CD', "Yes")
+			else
+				template.set(@destination_line, 'CD', "No")
+			end
 
 			#udf_imsource
 			template.set(@destination_line, 'CE', "#{source.cell(source_line,'Y')}")
 
 			#udf_limited
-			template.set(@destination_line, 'CF', "#{source.cell(source_line,'AO')}")
+			if "#{source.cell(source_line,'AO')}" == "Y"
+				template.set(@destination_line, 'CF', "Yes")
+			else
+				template.set(@destination_line, 'CF', "No")
+			end
 
 			#udf_maxsf
-			template.set(@destination_line, 'CG', "#{source.cell(source_line,'AS')}")
-
-			#udf_anycustom
-			template.set(@destination_line, 'BW', "#{source.cell(source_line,'AR')}")
+			template.set(@destination_line, 'CG', "0")
 
 			#udf_new
-			template.set(@destination_line, 'CH', "#{source.cell(source_line,'U')}")
+			if "#{source.cell(source_line,'U')}" == "Y"
+				template.set(@destination_line, 'CH', "Yes")
+			else
+				template.set(@destination_line, 'CH', "No")
+			end
 
 			#udf_osdp
-			template.set(@destination_line, 'CI', "#{source.cell(source_line,'AN')}")
+			if "#{source.cell(source_line,'AN')}" == "Y"
+				template.set(@destination_line, 'CI', "Yes")
+			else
+				template.set(@destination_line, 'CI', "No")
+			end
 
 			#udf_pricecorde
 			template.set(@destination_line, 'CJ', "#{source.cell(source_line,'D')}")
 
 			#udf_ratiocode
 			template.set(@destination_line, 'CK', "#{source.cell(source_line,'W')}")
+			#p "#{source.cell(source_line,'W')}"
+			#p "5:06"
 
 			#udf_tar
-			template.set(@destination_line, 'CL', "#{source.cell(source_line,'Z')}")
+			if "#{source.cell(source_line,'Z')}" == "Y"
+				template.set(@destination_line, 'CL', "Yes")
+			else
+				template.set(@destination_line, 'CL', "No")
+			end
 
 			#Visibility
 			template.set(@destination_line, 'CP', "4")
@@ -366,7 +410,7 @@ class TemplatesController < ApplicationController
 				#############SIZE#############
 
 				#_custom_option_store
-				template.set(@destination_line, 'EH', "default")
+				#template.set(@destination_line, 'EH', "default")
 				#_custom_option_type
 				template.set(@destination_line, 'EI', "radio")
 				#_custom_option_title
@@ -443,11 +487,13 @@ class TemplatesController < ApplicationController
 				#_custom_option_row_sort
 				template.set(@destination_line, 'ES', "5")
 
+				@destination_line = @destination_line + 1
+
 
 				########### Canvas Quality ###############
 
 				#_custom_option_store
-				template.set(@destination_line, 'EH', "default")
+				#template.set(@destination_line, 'EH', "default")
 				#_custom_option_type
 				template.set(@destination_line, 'EI', "radio")
 				#_custom_option_title
@@ -486,7 +532,7 @@ class TemplatesController < ApplicationController
 				########### Paper Quality ###############
 
 				#_custom_option_store
-				template.set(@destination_line, 'EH', "default")
+				#template.set(@destination_line, 'EH', "default")
 				#_custom_option_type
 				template.set(@destination_line, 'EI', "radio")
 				#_custom_option_title
@@ -526,7 +572,7 @@ class TemplatesController < ApplicationController
 				########### Material ###############
 
 				#_custom_option_store
-				template.set(@destination_line, 'EH', "default")
+				#template.set(@destination_line, 'EH', "default")
 				#_custom_option_type
 				template.set(@destination_line, 'EI', "radio")
 				#_custom_option_title
@@ -588,7 +634,7 @@ class TemplatesController < ApplicationController
 			# Compute the maximum count among all the multi select options
 			# then add it to the destination line count for the next product to be written
 			
-			@custom_options_array_size = 14
+			@custom_options_array_size = 0
 
 			@multi_select_options = Array.new
 			@multi_select_options << @color_count << @embellishments_count
