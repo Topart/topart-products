@@ -8,11 +8,11 @@ class TemplatesController < ApplicationController
 	def index
  
 		# Load the source Excel file, with all the special products info
-		source = Excelx.new("http://beta.topart.com/csv/special_products.xlsx")
+		source = Excelx.new("http://beta.topart.com/csv/Template - 2012-11-28/source.xls")
 		source.default_sheet = source.sheets.first
 		
 		# Load the Magento template, which is in Open Office format
-		template = Openoffice.new("http://beta.topart.com/csv/template.ods")
+		template = Openoffice.new("http://beta.topart.com/csv/Template - 2012-11-28/template.ods")
 		template.default_sheet = template.sheets.first
 		
 		# Color set
@@ -24,312 +24,579 @@ class TemplatesController < ApplicationController
 		@destination_line = 2
 		2.upto(source.last_row) do |source_line|
 		
-			# Sku
-			template.set(@destination_line, 'A', "#{source.cell(source_line,'B')}")
+			# Sku: insert a "_" after the last character in the string
+			original_sku = "#{source.cell(source_line,'A')}"
+			#sku = original_sku.sub!(match, '_')
+			template.set(@destination_line, 'A', original_sku)
 			
-			template.set(@destination_line, 'C', "Topart - Special Products")
+			template.set(@destination_line, 'C', "Topart - Products")
 			template.set(@destination_line, 'D', "simple")
-			template.set(@destination_line, 'E', "COLLECTIONS/Oscar Night")
+			template.set(@destination_line, 'E', "Collections")
 			template.set(@destination_line, 'F', "Root Category")
 			template.set(@destination_line, 'G', "base")
 			
 			# Alt Size 1, Alt Size 2, Alt Size 3, Alt Size 4
-			template.set(@destination_line, 'H', "#{source.cell(source_line,'S')}")
-			template.set(@destination_line, 'I', "#{source.cell(source_line,'T')}")
-			template.set(@destination_line, 'J', "#{source.cell(source_line,'U')}")
-			template.set(@destination_line, 'K', "#{source.cell(source_line,'V')}")
+			template.set(@destination_line, 'H', "#{source.cell(source_line,'J')}")
+			template.set(@destination_line, 'I', "#{source.cell(source_line,'K')}")
+			template.set(@destination_line, 'J', "#{source.cell(source_line,'L')}")
+			template.set(@destination_line, 'K', "#{source.cell(source_line,'M')}")
 			
-			# Artist First Name, Artist Last Name
-			template.set(@destination_line, 'L', "#{source.cell(source_line,'I')}")
-			template.set(@destination_line, 'M', "#{source.cell(source_line,'J')}")
+			# Artist Full Name
+			template.set(@destination_line, 'N', "#{source.cell(source_line,'C')}")
 			
-			# Color: Look into "keywords" i.e. "AK", and search for colors...
-			# ...and add each color to the same column but one @destination_line below
+			# Color: Look into "keywords" and search for colors...
+			# ...and add each color to the same column but on one @destination_line below
 			@color_count = 0;
 			0.upto(@color_set.length) do |n|
-				if "#{source.cell(source_line,'AK')}".include? "#{@color_set[n]}"
-					template.set(@destination_line + @color_count, 'N', "#{@color_set[n]}")
+				if "#{source.cell(source_line,'AT')}".include? "#{@color_set[n]}"
+					template.set(@destination_line + @color_count, 'L', "#{@color_set[n]}")
 					@color_count = @color_count + 1
 				end
 			end
 			
 			# Color Tone
-			template.set(@destination_line, 'O', "#{source.cell(source_line,'AH')}")
+			#template.set(@destination_line, 'M', "#{source.cell(source_line,'AH')}")
 			
-			# Created By
-			template.set(@destination_line, 'S', "#{source.cell(source_line,'AM')}")
-			
-			# Date Created, Date Expired, Date Modified
-			template.set(@destination_line, 'X', "#{source.cell(source_line,'AL')}")
-			template.set(@destination_line, 'Y', "#{source.cell(source_line,'AP')}")
-			template.set(@destination_line, 'Z', "#{source.cell(source_line,'AN')}")
-			
-			template.set(@destination_line, 'AA', "#{source.cell(source_line,'K')}")
-			
-			#p "#{source.cell(source_line,'AX')}".gsub(/ /, "")
-			
-			# Discontinued: it affects the product STATUS
-			# If Yes, STATUS = 2, else STATUS = 1
-			if "#{source.cell(source_line,'AR')}".gsub(/ /, "") == "Y"
-				template.set(@destination_line, 'AB', "Yes")
+			#Description
+			template.set(@destination_line, 'Y', "#{source.cell(source_line,'B')}")
 
-				# Status
-				template.set(@destination_line, 'CA', "2")
-			end
-			if "#{source.cell(source_line,'AR')}".gsub(/ /, "") == "N"
-				template.set(@destination_line, 'AB', "No")
-				
-				# Status
-				template.set(@destination_line, 'CA', "1")
-			end	
-			
-			# Do Not Display: it affects the product VISIBILITY
-			# If Yes, visibility = 1 else visibility = 4
-			if "#{source.cell(source_line,'AX')}".gsub(/ /, "") == "1.0"
-				template.set(@destination_line, 'AC', "Yes")
-				
-				# Visibility
-				template.set(@destination_line, 'CI', "1")
-			end
-			if "#{source.cell(source_line,'AX')}".gsub(/ /, "") == "0.0"
-				template.set(@destination_line, 'AC', "No")
-				
-				# Visibility
-				template.set(@destination_line, 'CI', "4")
-			end
-			
-			
-			
+
 			# Embellishments
 			@embellishments_count = 0
-			if "#{source.cell(source_line,'AB')}" == "Y"
-				template.set(@destination_line + @embellishments_count, 'AD', "Metallic")
+			if "#{source.cell(source_line,'S')}" == "Y"
+				template.set(@destination_line + @embellishments_count, 'AA', "Metallic")
 				@embellishments_count = @embellishments_count + 1
 			end
-			if "#{source.cell(source_line,'AA')}" == "Y"
-				template.set(@destination_line + @embellishments_count, 'AD', "Foil")
+			if "#{source.cell(source_line,'R')}" == "Y"
+				template.set(@destination_line + @embellishments_count, 'AA', "Foil")
 				@embellishments_count = @embellishments_count + 1
 			end
-			if "#{source.cell(source_line,'X')}" == "Y"
-				template.set(@destination_line + @embellishments_count, 'AD', "Serigraph")
+			if "#{source.cell(source_line,'O')}" == "Y"
+				template.set(@destination_line + @embellishments_count, 'AA', "Serigraph")
 				@embellishments_count = @embellishments_count + 1
 			end
-			if "#{source.cell(source_line,'Y')}" == "Y"
-				template.set(@destination_line + @embellishments_count, 'AD', "Embossed")
+			if "#{source.cell(source_line,'P')}" == "Y"
+				template.set(@destination_line + @embellishments_count, 'AA', "Embossed")
 				@embellishments_count = @embellishments_count + 1
-			end
-			
-			# Format: parse the width and the height, compute a rounded ratio and then the format
-			@page_size_cm = "#{source.cell(source_line,'M')}"
-			
-			@width = @page_size_cm.gsub(/ x .[0-9]/, "").to_f
-			@height = @page_size_cm.gsub(/.[0-9] x /, "").to_f
-			
-			@ratio = @width / @height
-			if @ratio > 0.9 && @ratio < 1.1
-				template.set(@destination_line, 'AF', "square")
-			end
-			if @ratio > 0.4 && @ratio < 0.7
-				template.set(@destination_line, 'AF', "portrait")
-			end
-			if @ratio > 1.5 && @ratio < 2.1
-				template.set(@destination_line, 'AF', "landscape")
-			end
-			if @ratio > 0.24 && @ratio < 0.4
-				template.set(@destination_line, 'AF', "panel")
-			end
-			if @ratio > 2.8 && @ratio < 4.2
-				template.set(@destination_line, 'AF', "panorama")
-			end
-			
-			# Image
-			template.set(@destination_line, 'AK', "#{source.cell(source_line,'Q')}")
-			template.set(@destination_line, 'AL', "#{source.cell(source_line,'K')}")
-			template.set(@destination_line, 'AM', "#{source.cell(source_line,'O')}")
-			template.set(@destination_line, 'AN', "#{source.cell(source_line,'P')}")
-			
-			# Has Options
-			template.set(@destination_line, 'AJ', "0")
-			
-			# Keywords
-			template.set(@destination_line, 'AO', "#{source.cell(source_line,'AK')}")
-			
-			# LLC Stock
-			template.set(@destination_line, 'AP', "#{source.cell(source_line,'G')}")
-			
-			# Meta Description, Meta Keyword, Meta Title
-			template.set(@destination_line, 'AT', "#{source.cell(source_line,'K')}")
-			template.set(@destination_line, 'AU', "#{source.cell(source_line,'AK')}")
-			template.set(@destination_line, 'AV', "#{source.cell(source_line,'K')}")
-			
-			# Modified By
-			template.set(@destination_line, 'AX', "#{source.cell(source_line,'AO')}")
-			
-			# Title
-			template.set(@destination_line, 'BC', "#{source.cell(source_line,'K')}")
-			
-			# No canvas
-			if "#{source.cell(source_line,'AV')}" == "Y"
-				template.set(@destination_line, 'BF', "Yes")
-			end	
-			if "#{source.cell(source_line,'AV')}" == "N"
-				template.set(@destination_line, 'BF', "No")
 			end
 
-			# Oversize
-			if "#{source.cell(source_line,'W')}" == "Y"
-				template.set(@destination_line, 'BH', "Yes")
-			end	
-			if "#{source.cell(source_line,'W')}" == "N"
-				template.set(@destination_line, 'BH', "No")
+
+			#Enable Google Checkout
+			template.set(@destination_line, 'AB', "1")
+
+
+			# Orientation: parse the width and the height, compute a rounded ratio and then the format
+			#@image_size_cm = "#{source.cell(source_line,'M')}"
+			
+			#@width = @page_size_cm.gsub(/ x .[0-9]/, "").to_f
+			#@height = @page_size_cm.gsub(/.[0-9] x /, "").to_f
+			
+			#@ratio = @width / @height
+			#if @ratio > 0.9 && @ratio < 1.1
+			#	template.set(@destination_line, 'AF', "square")
+			#end
+			#if @ratio > 0.4 && @ratio < 0.7
+			#	template.set(@destination_line, 'AF', "portrait")
+			#end
+			#if @ratio > 1.5 && @ratio < 2.1
+			#	template.set(@destination_line, 'AF', "landscape")
+			#end
+			
+			#if @ratio > 0.24 && @ratio < 0.4
+			#	template.set(@destination_line, 'AF', "panel")
+			#end
+			#if @ratio > 2.8 && @ratio < 4.2
+			#	template.set(@destination_line, 'AF', "panorama")
+			#end
+
+			#Orientation: get it directly from it corresponding column
+			template.set(@destination_line, 'AC', "#{source.cell(source_line,'T')}")
+
+
+			#has_options
+			if "#{source.cell(source_line,'A')}" =~ /DG$/ 
+				template.set(@destination_line, 'AF', "1")
+			else
+				template.set(@destination_line, 'AF', "0")
 			end
 
-			# Page: skip this
-			#template.set(@destination_line, 'BI', "#{source.cell(source_line,'AE')}")
+			# Image size cm
+			template.set(@destination_line, 'AI', "#{source.cell(source_line,'H')}")
+
+			# Image size inches
+			template.set(@destination_line, 'AJ', "#{source.cell(source_line,'I')}")
+
+			#Keywords
+			template.set(@destination_line, 'AK', "#{source.cell(source_line,'AT')}")
+
+
+			#Meta Description
+			template.set(@destination_line, 'AN', "#{source.cell(source_line,'B')}")
+
+			#Meta Kewyord
+			template.set(@destination_line, 'AO', "#{source.cell(source_line,'AT')}")
+
+			#Meta title
+			template.set(@destination_line, 'AP', "#{source.cell(source_line,'B')}")
+
+
+			#msrp_display_actual_price_type
+			template.set(@destination_line, 'AT', "Use config")
 			
-			# Page Size CM
-			template.set(@destination_line, 'BK', "#{source.cell(source_line,'M')}")
-			
-			# Page Size Inches
-			template.set(@destination_line, 'BM', "#{source.cell(source_line,'N')}")
-			
-			# POD
-			if "#{source.cell(source_line,'AS')}" == "Y"
-				template.set(@destination_line, 'BN', "Yes")
-			end	
-			if "#{source.cell(source_line,'AS')}" == "N"
-				template.set(@destination_line, 'BN', "No")
+			#msrp_enabled
+			template.set(@destination_line, 'AU', "Use config")
+
+			#Name
+			template.set(@destination_line, 'AV', "#{source.cell(source_line,'B')}")
+
+			#options_container
+			template.set(@destination_line, 'AY', "Block after Info Column")
+
+			#Oversize
+			template.set(@destination_line, 'AZ', "#{source.cell(source_line,'N')}")
+
+			#Paper size cm
+			template.set(@destination_line, 'BC', "#{source.cell(source_line,'F')}")
+
+			#Paper size inches
+			template.set(@destination_line, 'BE', "#{source.cell(source_line,'G')}")
+
+			#A4POD
+			template.set(@destination_line, 'BF', "#{source.cell(source_line,'V')}")
+
+			#Price
+			template.set(@destination_line, 'BG', "#{source.cell(source_line,'E')}")
+
+
+			#required_options
+			if "#{source.cell(source_line,'A')}" =~ /DG$/ 
+				template.set(@destination_line, 'BH', "1")
+			else
+				template.set(@destination_line, 'BH', "0")
 			end
+
+			#Short description
+			template.set(@destination_line, 'BI', "#{source.cell(source_line,'B')}")
+
+
+			#Size category: for posters
+			@paper_size_cm = "#{source.cell(source_line,'F')}"
 			
-			# POD Only
-			if "#{source.cell(source_line,'AU')}" == "Y"
-				template.set(@destination_line, 'BO', "Yes")
-			end	
-			if "#{source.cell(source_line,'AU')}" == "N"
-				template.set(@destination_line, 'BO', "No")
+			@width = @paper_size_cm.gsub(/ x .[0-9]/, "").to_f
+			@height = @paper_size_cm.gsub(/.[0-9] x /, "").to_f
+
+			@ui = @width + @height;
+
+			if @ui == 24 or @ui == 36 or @ui == 40 or @ui == 25 or @ui == 28   
+				template.set(@destination_line, 'BK', "Petite")
 			end
-			
-			# Price
-			template.set(@destination_line, 'BP', "#{source.cell(source_line,'L')}")
-			
-			
-			
-			template.set(@destination_line, 'BA', "Use config")
-			template.set(@destination_line, 'BB', "Use config")
-			template.set(@destination_line, 'BG', "Block after Info Column")
-			
-			# Required Options
-			template.set(@destination_line, 'BQ', "0")
-			
-			# Short Description
-			template.set(@destination_line, 'BR', "#{source.cell(source_line,'K')}")
-			
-			# Size Category
-			template.set(@destination_line, 'BT', "#{source.cell(source_line,'AG')}")
-			
-			# Small Image
-			template.set(@destination_line, 'BU', "#{source.cell(source_line,'Q')}")
-			
-			# Small Image Label
-			template.set(@destination_line, 'BV', "#{source.cell(source_line,'K')}")
-			
-			# SRL Stock
-			template.set(@destination_line, 'BZ', "#{source.cell(source_line,'H')}")
-			
-			# Tax Class Id
-			template.set(@destination_line, 'CB', "0")
-			
-			# Thumbnail
-			template.set(@destination_line, 'CC', "#{source.cell(source_line,'Q')}")
-			
-			# Thumbnail Label
-			template.set(@destination_line, 'CD', "#{source.cell(source_line,'K')}")
-			
-			# Small Image Label
-			template.set(@destination_line, 'BV', "#{source.cell(source_line,'K')}")
-			
-			# Title
-			template.set(@destination_line, 'CE', "#{source.cell(source_line,'K')}")
-			
-			# URL Key
-			@url_key = "#{source.cell(source_line,'K')}";
-			@url_key = @url_key.gsub(/ /, "-")
-			template.set(@destination_line, 'CG', "#{@url_key}")
-			
-			# URL Path
-			@url_path = @url_key + ".html"
-			template.set(@destination_line, 'CH', "#{@url_path}")
-			
-			# Weight
-			template.set(@destination_line, 'CJ', "1.0")
-			
-			# Weight
-			template.set(@destination_line, 'CK', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CL', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CM', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CN', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CO', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CP', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CQ', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CR', "0")
-			
-			# Weight
+
+			if @ui == 32 or @ui == 48 or @ui == 35 or @ui == 42   
+				template.set(@destination_line, 'BK', "Small")
+			end
+
+			if @ui == 40 or @ui == 54 or @ui == 64 or @ui == 50   
+				template.set(@destination_line, 'BK', "Mediume")
+			end
+
+			if @ui == 60 or @ui == 56
+				template.set(@destination_line, 'BK', "Large")
+			end
+
+			if @ui == 72 or @ui == 80 or @ui == 90   
+				template.set(@destination_line, 'BK', "Oversize")
+			end
+
+
+			#Status: enabled (1), disabled (2)
+			if "#{source.cell(source_line,'A')}" =~ /DG$/ 
+				template.set(@destination_line, 'BQ', "1")
+			else
+				template.set(@destination_line, 'BQ', "2")
+			end
+
+			#Tax class ID
+			template.set(@destination_line, 'BR', "2")
+
+			#total_quantity_on_hand
+			template.set(@destination_line, 'BV', "#{source.cell(source_line,'AE')}")
+
+			#udf_anycustom
+			template.set(@destination_line, 'BW', "#{source.cell(source_line,'AR')}")
+
+			#Artist name
+			template.set(@destination_line, 'BX', "#{source.cell(source_line,'C')}")
+
+			#Copyright
+			template.set(@destination_line, 'BY', "#{source.cell(source_line,'AP')}")
+
+			#udf_anycustom
+			template.set(@destination_line, 'BZ', "#{source.cell(source_line,'AQ')}")
+
+			#udf_anycustom
+			template.set(@destination_line, 'BW', "#{source.cell(source_line,'AR')}")
+
+			#udf_dnd
+			template.set(@destination_line, 'CB', "#{source.cell(source_line,'X')}")
+
+			#udf_embellished
+			template.set(@destination_line, 'CC', "#{source.cell(source_line,'AG')}")
+
+			#udf_framed
+			template.set(@destination_line, 'CD', "#{source.cell(source_line,'AH')}")
+
+			#udf_imsource
+			template.set(@destination_line, 'CE', "#{source.cell(source_line,'Y')}")
+
+			#udf_limited
+			template.set(@destination_line, 'CF', "#{source.cell(source_line,'AO')}")
+
+			#udf_maxsf
+			template.set(@destination_line, 'CG', "#{source.cell(source_line,'AS')}")
+
+			#udf_anycustom
+			template.set(@destination_line, 'BW', "#{source.cell(source_line,'AR')}")
+
+			#udf_new
+			template.set(@destination_line, 'CH', "#{source.cell(source_line,'U')}")
+
+			#udf_osdp
+			template.set(@destination_line, 'CI', "#{source.cell(source_line,'AN')}")
+
+			#udf_pricecorde
+			template.set(@destination_line, 'CJ', "#{source.cell(source_line,'D')}")
+
+			#udf_ratiocode
+			template.set(@destination_line, 'CK', "#{source.cell(source_line,'W')}")
+
+			#udf_tar
+			template.set(@destination_line, 'CL', "#{source.cell(source_line,'Z')}")
+
+			#Visibility
+			template.set(@destination_line, 'CP', "4")
+
+			#Weight
+			template.set(@destination_line, 'CQ', "1")
+
+			#Qty
+			if "#{source.cell(source_line,'A')}" =~ /DG$/ 
+				template.set(@destination_line, 'CR', "0")
+			else
+				template.set(@destination_line, 'CR', "#{source.cell(source_line,'AE')}")
+			end
+
+			#Min qty
 			template.set(@destination_line, 'CS', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CT', "0")
-			
-			# Weight
+
+			#use_config_min_qty
+			template.set(@destination_line, 'CT', "1")
+
+			#is_qty_decimal
 			template.set(@destination_line, 'CU', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CW', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CX', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CY', "0")
-			
-			# Weight
-			template.set(@destination_line, 'CZ', "1")
-			
-			# Weight
-			template.set(@destination_line, 'DA', "0")
-			
-			# Weight
-			template.set(@destination_line, 'DB', "0")
-			
-			# Weight
-			template.set(@destination_line, 'DC', "1")
-			
-			# Weight
-			template.set(@destination_line, 'DD', "0")
-			
-			# Weight
-			template.set(@destination_line, 'DE', "0")
+
+			#backorders
+			template.set(@destination_line, 'CV', "0")
+
+			#use_config_backorders
+			template.set(@destination_line, 'CW', "1")
+
+			#min_sale_qty
+			template.set(@destination_line, 'CX', "1")
+
+			#use_config_min_sale_qty
+			template.set(@destination_line, 'CY', "1")
+
+			#max_sale_qty
+			template.set(@destination_line, 'CZ', "0")
+
+			#use_config_max_sale_qty
+			template.set(@destination_line, 'DA', "1")
+
+			#is_in_stock
+			if "#{source.cell(source_line,'A')}" =~ /DG$/
+				template.set(@destination_line, 'DB', "1")
+			else
+				template.set(@destination_line, 'DB', "0")
+			end
+
+			#use_config_notify_stock_qty
+			if "#{source.cell(source_line,'A')}" =~ /DG$/
+				template.set(@destination_line, 'DD', "1")
+			else
+				template.set(@destination_line, 'DD', "0")
+			end
+
+			#manage_stock
+			if "#{source.cell(source_line,'A')}" =~ /DG$/
+				template.set(@destination_line, 'DE', "1")
+			else
+				template.set(@destination_line, 'DE', "0")
+			end
+
+			#use_config_manage_stock
+			if "#{source.cell(source_line,'A')}" =~ /DG$/
+				template.set(@destination_line, 'DF', "1")
+			else
+				template.set(@destination_line, 'DF', "0")
+			end
+
+			#stock_status_changed_auto
+			template.set(@destination_line, 'DG', "0")
+
+			#use_config_qty_increments
+			template.set(@destination_line, 'DH', "1")
+
+			#qty_increments
+			template.set(@destination_line, 'DI', "0")
+
+			#use_config_enable_qty_inc
+			template.set(@destination_line, 'DJ', "1")
+
+			#enable_qty_increments
+			template.set(@destination_line, 'DK', "0")
+
+			#is_decimal_divided
+			template.set(@destination_line, 'DL', "0")
+
+
+
+			########## Custom options columns ##########
+			if "#{source.cell(source_line,'A')}" =~ /DG$/
+
+				#############SIZE#############
+
+				#_custom_option_store
+				template.set(@destination_line, 'EH', "default")
+				#_custom_option_type
+				template.set(@destination_line, 'EI', "radio")
+				#_custom_option_title
+				template.set(@destination_line, 'EJ', "Size")
+				#_custom_option_is_required
+				template.set(@destination_line, 'EK', "1")
+				#_custom_option_max_characters
+				template.set(@destination_line, 'EN', "0")
+				#_custom_option_sort_order
+				template.set(@destination_line, 'EO', "3")
+				
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Petite")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "size_petite")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "0")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Small")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "size_small")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "1")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Medium")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "size_medium")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "2")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Large")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "size_large")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "3")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Oversize")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "size_oversize")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "4")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Custom")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "size_custom")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "5")
+
+
+				########### Canvas Quality ###############
+
+				#_custom_option_store
+				template.set(@destination_line, 'EH', "default")
+				#_custom_option_type
+				template.set(@destination_line, 'EI', "radio")
+				#_custom_option_title
+				template.set(@destination_line, 'EJ', "Canvas Quality")
+				#_custom_option_is_required
+				template.set(@destination_line, 'EK', "0")
+				#_custom_option_max_characters
+				template.set(@destination_line, 'EN', "0")
+				#_custom_option_sort_order
+				template.set(@destination_line, 'EO', "2")
+				
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Standard")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "canvas_standard")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "0")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Rag")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "canvas_rag")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "1")
+
+				@destination_line = @destination_line + 1
+
+
+				########### Paper Quality ###############
+
+				#_custom_option_store
+				template.set(@destination_line, 'EH', "default")
+				#_custom_option_type
+				template.set(@destination_line, 'EI', "radio")
+				#_custom_option_title
+				template.set(@destination_line, 'EJ', "Paper Quality")
+				#_custom_option_is_required
+				template.set(@destination_line, 'EK', "0")
+				#_custom_option_max_characters
+				template.set(@destination_line, 'EN', "0")
+				#_custom_option_sort_order
+				template.set(@destination_line, 'EO', "1")
+				
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Standard Quality Paper")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "paperquality_standard")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "0")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Special Quality Paper")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "paperquality_specialpaper")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "1")
+
+				@destination_line = @destination_line + 1
+
+
+
+				########### Material ###############
+
+				#_custom_option_store
+				template.set(@destination_line, 'EH', "default")
+				#_custom_option_type
+				template.set(@destination_line, 'EI', "radio")
+				#_custom_option_title
+				template.set(@destination_line, 'EJ', "Material")
+				#_custom_option_is_required
+				template.set(@destination_line, 'EK', "1")
+				#_custom_option_max_characters
+				template.set(@destination_line, 'EN', "0")
+				#_custom_option_sort_order
+				template.set(@destination_line, 'EO', "0")
+				
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Poster")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "material_poster")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "0")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Photopaper")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "material_photopaper")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "1")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Canvas")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "material_canvas")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "2")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				template.set(@destination_line, 'EP', "Decal")
+				#_custom_option_row_price
+				template.set(@destination_line, 'EQ', "0")
+				#_custom_option_row_sku
+				template.set(@destination_line, 'ER', "material_decal")
+				#_custom_option_row_sort
+				template.set(@destination_line, 'ES', "3")
+
+			end	
 			
 			
 			
 			# Compute the maximum count among all the multi select options
 			# then add it to the destination line count for the next product to be written
 			
+			@custom_options_array_size = 14
+
 			@multi_select_options = Array.new
 			@multi_select_options << @color_count << @embellishments_count
+
+			if "#{source.cell(source_line,'A')}" =~ /DG$/
+				@multi_select_options << @custom_options_array_size
+			end
+
 			@max_count =  @multi_select_options.max
 			
 			# Increase the destination line to the correct number
@@ -338,7 +605,7 @@ class TemplatesController < ApplicationController
 		end
 		
 		# Finally, fill the template
-		template.to_csv("filled_layered_template.csv")
+		template.to_csv("new_inventory.csv")
  
 		# Accessing this view launch the service automatically
 		respond_to do |format|
