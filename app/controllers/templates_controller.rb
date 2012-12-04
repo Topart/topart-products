@@ -218,9 +218,9 @@ class TemplatesController < ApplicationController
 
 			#Status: enabled (1), disabled (2)
 			if "#{source.cell(source_line,'A')}" =~ /DG$/ 
-				template.set(@destination_line, 'BQ', "1")
-			else
 				template.set(@destination_line, 'BQ', "2")
+			else
+				template.set(@destination_line, 'BQ', "1")
 			end
 
 			#Tax class ID
