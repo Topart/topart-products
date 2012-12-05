@@ -48,7 +48,7 @@ class TemplatesController < ApplicationController
 			# ...and add each color to the same column but on one @destination_line below
 			@color_count = 0;
 			0.upto(@color_set.length) do |n|
-				if "#{source.cell(source_line,'AT')}".include? "#{@color_set[n]}"
+				if "#{source.cell(source_line,'AT')}".downcase.include? "#{@color_set[n]}"
 					template.set(@destination_line + @color_count, 'L', "#{@color_set[n]}")
 					@color_count = @color_count + 1
 				end
@@ -127,7 +127,7 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, 'AJ', "#{source.cell(source_line,'I')}")
 
 			#Keywords
-			template.set(@destination_line, 'AK', "#{source.cell(source_line,'AT')}")
+			template.set(@destination_line, 'AK', "#{source.cell(source_line,'AT')}".downcase)
 
 
 			#Meta Description
@@ -188,33 +188,37 @@ class TemplatesController < ApplicationController
 
 
 			#Size category: for posters
-			@paper_size_cm = "#{source.cell(source_line,'F')}"
+			@image_size_cm = "#{source.cell(source_line,'H')}"
 			
-			@width = @paper_size_cm.gsub(/ x .[0-9]/, "")
-			@height = @paper_size_cm.gsub(/.[0-9] x /, "")
+			@width = @image_size_cm.gsub(/ x .[0-9]/, "")
+			@height = @image_size_cm.gsub(/.[0-9] x /, "")
 
-			@ui = @width + @height;
+			#Convert UI to inches to have a consistent comparison with the spreadsheet
+			@ui = ( (@width.to_i + @height.to_i) / 2.54).to_i;
 
-			if @ui == 24 or @ui == 36 or @ui == 40 or @ui == 25 or @ui == 28   
-				template.set(@destination_line, 'BK', "Petite")
+			if (@ui != 0)
+
+				if @ui < 40 
+					template.set(@destination_line, 'BK', "Petite")
+				end
+
+				if @ui >= 40 and @ui <  50
+					template.set(@destination_line, 'BK', "Small")
+				end
+
+				if @ui >= 50 and @ui < 60 
+					template.set(@destination_line, 'BK', "Medium")
+				end
+
+				if @ui >= 60 and @ui < 70
+					template.set(@destination_line, 'BK', "Large")
+				end
+
+				if @ui >= 70   
+					template.set(@destination_line, 'BK', "Oversize")
+				end
+
 			end
-
-			if @ui == 32 or @ui == 48 or @ui == 35 or @ui == 42   
-				template.set(@destination_line, 'BK', "Small")
-			end
-
-			if @ui == 40 or @ui == 54 or @ui == 64 or @ui == 50   
-				template.set(@destination_line, 'BK', "Mediume")
-			end
-
-			if @ui == 60 or @ui == 56
-				template.set(@destination_line, 'BK', "Large")
-			end
-
-			if @ui == 72 or @ui == 80 or @ui == 90   
-				template.set(@destination_line, 'BK', "Oversize")
-			end
-
 
 			#Status: enabled (1), disabled (2)
 			if "#{source.cell(source_line,'A')}" =~ /DG$/ 
@@ -228,9 +232,9 @@ class TemplatesController < ApplicationController
 
 			#total_quantity_on_hand
 			if "#{source.cell(source_line,'A')}" =~ /DG$/ 
-				template.set(@destination_line, 'BV', "0")
+				template.set(@destination_line, 'BV', "0".to_i)
 			else
-				template.set(@destination_line, 'BV', "#{source.cell(source_line,'AE')}")
+				template.set(@destination_line, 'BV', "#{source.cell(source_line,'AE')}".to_i)
 			end
 
 			#udf_anycustom
@@ -305,9 +309,12 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, 'CJ', "#{source.cell(source_line,'D')}")
 
 			#udf_ratiocode
-			template.set(@destination_line, 'CK', "#{source.cell(source_line,'W')}")
-			#p "#{source.cell(source_line,'W')}"
-			#p "5:06"
+			time = "#{source.cell(source_line,'W')}".to_i
+			hours = time/3600
+			minutes = (time/60 - hours * 60)
+
+			ratio_code = hours.to_s << ":" << minutes.to_s
+			template.set(@destination_line, 'CK', ratio_code)
 
 			#udf_tar
 			if "#{source.cell(source_line,'Z')}" == "Y"
@@ -315,6 +322,9 @@ class TemplatesController < ApplicationController
 			else
 				template.set(@destination_line, 'CL', "No")
 			end
+
+			#URL Key, with the SKU as suffix to keep it unique among products
+			template.set(@destination_line, 'CN', "#{source.cell(source_line,'B')}".gsub(/[ ]/, '-')  << "-" << "#{source.cell(source_line,'A')}")
 
 			#Visibility
 			template.set(@destination_line, 'CP', "4")
