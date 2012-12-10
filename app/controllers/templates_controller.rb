@@ -19,7 +19,13 @@ class TemplatesController < ApplicationController
 		
 		# Color set
 		@color_set = Array["red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "black/white", "black", "white"]
+
+		# Categories list
+		source_categories = Excel.new("Template_2012_11_28/category list for website.xls")
+		source_categories.default_sheet = source_categories.sheets.first
+
 		
+
 		# Fill every line in the template file up with
 		# the right value taken from the source input file
 		
@@ -34,8 +40,83 @@ class TemplatesController < ApplicationController
 			
 			template.set(@destination_line, 'C', "Topart - Products")
 			template.set(@destination_line, 'D', "simple")
-			template.set(@destination_line, 'E', "Collections")
-			template.set(@destination_line, 'F', "Root Category")
+
+			@collections_count = 0
+
+			# Artist Focus: look for artists names
+			if ( "#{source.cell(source_line,'C')}".downcase.strip == "chris donovan" or "#{source.cell(source_line,'C')}".downcase.strip == "luke wilson" or "#{source.cell(source_line,'C')}".downcase.strip == "erin lange" or "#{source.cell(source_line,'C')}".downcase.strip == "gregory williams" or "#{source.cell(source_line,'C')}".downcase.strip == "john seba" or "#{source.cell(source_line,'C')}".downcase.strip == "mike klung" or "#{source.cell(source_line,'C')}".downcase.strip == "alex edwards")
+
+				template.set(@destination_line + @collections_count, 'E', "Artist Focus/" + "#{source.cell(source_line,'C')}")
+				template.set(@destination_line + @collections_count, 'F', "Root Category")
+
+				@collections_count = @collections_count + 1
+
+			end
+
+			# Check if any keyword matches any category name. 
+			# If there is a match, add the category name to the corresponding product row.
+			2.upto(source_categories.last_row) do |source_categories_line|
+			#3.upto(3) do |source_categories_line|
+
+			# Discard the "delete" categories
+				if ( "#{source_categories.cell(source_categories_line,'C')}".downcase.strip != "delete" )
+
+					# Check for set intersection between keywords and category names keywords
+					if ( ( ("#{source.cell(source_line,'AT')}".downcase.split(";")) & ("#{source_categories.cell(source_categories_line,'B')}".downcase.split(",") ) ).any? )
+				
+						template.set(@destination_line + @collections_count, 'E', "Browse Art/" + "#{source_categories.cell(source_categories_line,'A')}".strip)
+						template.set(@destination_line + @collections_count, 'F', "Root Category")
+
+						@collections_count = @collections_count + 1
+
+					end
+				end
+			end
+
+			# Featured Collections
+			### Empty for now
+
+			# Oversize Variety
+			if ( "#{source.cell(source_line,'N')}" == "Y")
+
+				template.set(@destination_line + @collections_count, 'E', "Collections/Oversize Variety")
+				template.set(@destination_line + @collections_count, 'F', "Root Category")
+
+				@collections_count = @collections_count + 1
+
+			end
+
+			# Abastract Geometry
+			if "#{source.cell(source_line,'AT')}".downcase.include? "industrial" or "#{source.cell(source_line,'AT')}".downcase.include? "geometric"
+
+				template.set(@destination_line + @collections_count, 'E', "Collections/Abstract Geometry")
+				template.set(@destination_line + @collections_count, 'F', "Root Category")
+
+				@collections_count = @collections_count + 1
+
+			end
+			
+
+			# Urban Industrial
+			if "#{source.cell(source_line,'AT')}".downcase.include? "industrial"
+
+				template.set(@destination_line + @collections_count, 'E', "Collections/Urban Industrial")
+				template.set(@destination_line + @collections_count, 'F', "Root Category")
+
+				@collections_count = @collections_count + 1
+
+			end
+
+			# Gustav Klimt
+			if "#{source.cell(source_line,'AT')}".downcase.include? "klimt"
+
+				template.set(@destination_line + @collections_count, 'E', "Collections/Gustav Klimt-150th Anniversary")
+				template.set(@destination_line + @collections_count, 'F', "Root Category")
+
+				@collections_count = @collections_count + 1
+
+			end
+
 			template.set(@destination_line, 'G', "base")
 			
 			# Alt Size 1, Alt Size 2, Alt Size 3, Alt Size 4
@@ -647,7 +728,7 @@ class TemplatesController < ApplicationController
 			@custom_options_array_size = 0
 
 			@multi_select_options = Array.new
-			@multi_select_options << @color_count << @embellishments_count
+			@multi_select_options << @color_count << @embellishments_count << @collections_count
 
 			if "#{source.cell(source_line,'A')}" =~ /DG$/
 				@multi_select_options << @custom_options_array_size
