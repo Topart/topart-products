@@ -26,7 +26,7 @@ class TemplatesController < ApplicationController
 
 		# Automatically scan the template column names and store them in an associative array
 		@template_dictionary = Hash.new
-		"A".upto("ER") do |alphabet_character|
+		"A".upto("ES") do |alphabet_character|
 
 			@cell_content = "#{template.cell(1, alphabet_character)}"
 			@template_dictionary[@cell_content] = alphabet_character
@@ -90,6 +90,7 @@ class TemplatesController < ApplicationController
 
 			end
 
+			
 			# Check if any keyword matches any category name. 
 			# If there is a match, add the category name to the corresponding product row.
 			2.upto(source_categories.last_row) do |source_categories_line|
@@ -99,17 +100,34 @@ class TemplatesController < ApplicationController
 				if ( "#{source_categories.cell(source_categories_line,'C')}".downcase.strip != "delete" )
 
 					@source_column = @source_dictionary["UDF_ATTRIBUTES"]
-					# Check for set intersection between keywords and category names keywords
-					if ( ( ("#{source.cell(source_line, @source_column)}".downcase.split(";")) & ("#{source_categories.cell(source_categories_line,'B')}".downcase.split(",") ) ).any? )
-				
-						@template_column = @template_dictionary["_category"]
-						template.set(@destination_line + @collections_count, @template_column, "Browse Art/" + "#{source_categories.cell(source_categories_line,'A')}".strip)
-						
-						@template_column = @template_dictionary["_root_category"]
-						template.set(@destination_line + @collections_count, @template_column, "Root Category")
 
-						@collections_count = @collections_count + 1
+					@source_keywords_string = "#{source.cell(source_line, @source_column)}".downcase
+					@categories_keywords_array = "#{source_categories.cell(source_categories_line,'B')}".downcase.split(",")
+					@category_name = "#{source_categories.cell(source_categories_line,'A')}".strip
 
+					@written_categories = []
+
+					# Browse Art
+					0.upto(@categories_keywords_array.size) do |i|
+
+						@string = @categories_keywords_array[i]
+						if ( @string )
+
+							@string = @string.strip
+							if ( @source_keywords_string.include?(@string) and !@written_categories.include?(@category_name))
+
+								@template_column = @template_dictionary["_category"]
+								template.set(@destination_line + @collections_count, @template_column, "Browse Art/" + @category_name)
+
+								@written_categories << @category_name
+								
+								@template_column = @template_dictionary["_root_category"]
+								template.set(@destination_line + @collections_count, @template_column, "Root Category")
+
+								@collections_count = @collections_count + 1
+
+							end
+						end
 					end
 				end
 			end
@@ -177,7 +195,7 @@ class TemplatesController < ApplicationController
 
 			# Abastract Geometry
 			@source_column = @source_dictionary["UDF_ATTRIBUTES"]
-			if "#{source.cell(source_line, @source_column)}".downcase.include? "industrial" or "#{source.cell(source_line, @source_column)}".downcase.include? "geometric"
+			if "#{source.cell(source_line, @source_column)}".downcase.include? "abstract" and "#{source.cell(source_line, @source_column)}".downcase.include? "geometric"
 
 				@template_column = @template_dictionary["_category"]
 				template.set(@destination_line + @collections_count, @template_column, "Collections/Abstract Geometry")
@@ -340,7 +358,8 @@ class TemplatesController < ApplicationController
 			#Keywords
 			@source_column = @source_dictionary["UDF_ATTRIBUTES"]
 			@template_column = @template_dictionary["keywords"]
-			template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}".downcase)
+			@keywords_list = "#{source.cell(source_line, @source_column)}".downcase.split(";").first(20)
+			template.set(@destination_line, @template_column, @keywords_list.join(";"))
 
 
 			#Meta Description
@@ -348,10 +367,11 @@ class TemplatesController < ApplicationController
 			@template_column = @template_dictionary["meta_description"]
 			template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}")
 
-			#Meta Kewyord
-			@source_column = @source_dictionary["Description"]
+			#Meta Kewyords
+			@source_column = @source_dictionary["UDF_ATTRIBUTES"]
 			@template_column = @template_dictionary["meta_keyword"]
-			template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}")
+			@keywords_list = "#{source.cell(source_line, @source_column)}".downcase.split(";").first(20)
+			template.set(@destination_line, @template_column, @keywords_list.join(";"))
 
 			#Meta title
 			@source_column = @source_dictionary["Description"]
@@ -505,6 +525,11 @@ class TemplatesController < ApplicationController
 			else
 				template.set(@destination_line, @template_column, "No")
 			end
+
+			#udf_crimage
+			@source_column = @source_dictionary["UDF_CRIMAGE"]
+			@template_column = @template_dictionary["udf_crimage"]
+			template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}")
 
 			#udf_crline
 			@source_column = @source_dictionary["UDF_CRLINE"]
