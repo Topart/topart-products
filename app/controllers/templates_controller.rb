@@ -50,7 +50,7 @@ class TemplatesController < ApplicationController
 		
 		@destination_line = 2
 		2.upto(source.last_row) do |source_line|
-		#2.upto(50) do |source_line|
+		#2.upto(150) do |source_line|
 
 
 			#{}"A".upto("ER") do |alphabet_character|
@@ -356,10 +356,12 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}")
 
 			#Keywords
-			@source_column = @source_dictionary["UDF_ATTRIBUTES"]
-			@template_column = @template_dictionary["keywords"]
-			@keywords_list = "#{source.cell(source_line, @source_column)}".downcase.split(";").first(20)
-			template.set(@destination_line, @template_column, @keywords_list.join(";"))
+			#@source_column = @source_dictionary["UDF_ATTRIBUTES"]
+			#@template_column = @template_dictionary["keywords"]
+			#@keywords_list = "#{source.cell(source_line, @source_column)}".downcase.split(";").first(20)
+			#template.set(@destination_line, @template_column, @keywords_list.join(";"))
+			#@keywords_list = "#{source.cell(source_line, @source_column)}".downcase
+			#template.set(@destination_line, @template_column, @keywords_list)
 
 
 			#Meta Description
@@ -370,8 +372,10 @@ class TemplatesController < ApplicationController
 			#Meta Kewyords
 			@source_column = @source_dictionary["UDF_ATTRIBUTES"]
 			@template_column = @template_dictionary["meta_keyword"]
-			@keywords_list = "#{source.cell(source_line, @source_column)}".downcase.split(";").first(20)
-			template.set(@destination_line, @template_column, @keywords_list.join(";"))
+			#@keywords_list = "#{source.cell(source_line, @source_column)}".downcase.split(";").first(20)
+			#template.set(@destination_line, @template_column, @keywords_list.join(";"))
+			@keywords_list = "#{source.cell(source_line, @source_column)}".downcase
+			template.set(@destination_line, @template_column, @keywords_list)
 
 			#Meta title
 			@source_column = @source_dictionary["Description"]
