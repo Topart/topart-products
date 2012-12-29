@@ -9,19 +9,19 @@ class TemplatesController < ApplicationController
  
 		# Load the source Excel file, with all the special products info
 		#source = Excel.new("http://beta.topart.com/csv/Template_2012_11_28/source.xls")
-		source = Excel.new("Template_2012_12_07/source.xls")
+		source = Excel.new("Template_2012_12_27/source.xls")
 		source.default_sheet = source.sheets.first
 		
 		# Load the Magento template, which is in Open Office format
 		#template = Openoffice.new("http://beta.topart.com/csv/Template_2012_11_28/template.ods")
-		template = Openoffice.new("Template_2012_12_07/template.ods")
+		template = Openoffice.new("Template_2012_12_27/template.ods")
 		template.default_sheet = template.sheets.first
 		
 		# Color set
 		@color_set = Array["red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "black/white", "black", "white"]
 
 		# Categories list
-		source_categories = Excel.new("Template_2012_12_07/category list for website.xls")
+		source_categories = Excel.new("Template_2012_12_27/category list for website.xls")
 		source_categories.default_sheet = source_categories.sheets.first
 
 		# Automatically scan the template column names and store them in an associative array
@@ -42,15 +42,53 @@ class TemplatesController < ApplicationController
 			@source_dictionary[@cell_content] = alphabet_character
 		end
 
-		#p @source_dictionary["udf_limited"]
+
+		# Load the retail_material_size spreadsheet file for paper
+		retail_material_size_paper = Excel.new("Template_2012_12_27/retail_material_size_treatments.xls")
+		retail_material_size_paper.default_sheet = retail_material_size_paper.sheets.first
+
+		# Load the retail_material_size spreadsheet file for canvas
+		retail_material_size_canvas = Excel.new("Template_2012_12_27/retail_material_size_treatments.xls")
+		retail_material_size_canvas.default_sheet = retail_material_size_canvas.sheets.second
+
+		# Load the retail_framing_stretching_matting spreadsheet file to extract framing, stretching and matting information
+		retail_framing_stretching_matting = Excel.new("Template_2012_12_27/retail_framing_stretching_matting.xls")
+		retail_framing_stretching_matting.default_sheet = retail_framing_stretching_matting.sheets.first
+
+
+		# MATERIAL -> PAPER
+		# Automatically scan the source column names and store them in an associative array
+		@retail_material_size_paper_dictionary = Hash.new
+		"A".upto("S") do |alphabet_character|
+
+			@cell_content = "#{retail_material_size_paper.cell(1, alphabet_character)}"
+			@retail_material_size_paper_dictionary[@cell_content] = alphabet_character
+		end
+
+		# MATERIAL -> CANVAS
+		# Automatically scan the source column names and store them in an associative array
+		@retail_material_size_canvas_dictionary = Hash.new
+		"A".upto("AL") do |alphabet_character|
+
+			@cell_content = "#{retail_material_size_canvas.cell(1, alphabet_character)}"
+			@retail_material_size_canvas_dictionary[@cell_content] = alphabet_character
+		end
+
+		# FRAMING, STRETCHING, MATTING
+		# Automatically scan the source column names and store them in an associative array
+		@retail_framing_stretching_matting_dictionary = Hash.new
+		"A".upto("N") do |alphabet_character|
+
+			@cell_content = "#{retail_framing_stretching_matting.cell(2, alphabet_character)}"
+			@retail_framing_stretching_matting_dictionary[@cell_content] = alphabet_character
+		end
 
 
 		# Fill every line in the template file up with
-		# the right value taken from the source input file
-		
+		# the right value taken from the source input file		
 		@destination_line = 2
-		2.upto(source.last_row) do |source_line|
-		#2.upto(150) do |source_line|
+		#2.upto(source.last_row) do |source_line|
+		4679.upto(4679) do |source_line|
 
 
 			#{}"A".upto("ER") do |alphabet_character|
@@ -488,7 +526,7 @@ class TemplatesController < ApplicationController
 			@source_column = @source_dictionary["Item Code"]
 			@template_column = @template_dictionary["status"]
 			if "#{source.cell(source_line,@source_column)}" =~ /DG$/ 
-				template.set(@destination_line, @template_column, "2")
+				template.set(@destination_line, @template_column, "1")
 			else
 				template.set(@destination_line, @template_column, "1")
 			end
@@ -705,18 +743,18 @@ class TemplatesController < ApplicationController
 			@source_column = @source_dictionary["Item Code"]
 			@template_column = @template_dictionary["manage_stock"]
 			if "#{source.cell(source_line,@source_column)}" =~ /DG$/
-				template.set(@destination_line, @template_column, "1")
-			else
 				template.set(@destination_line, @template_column, "0")
+			else
+				template.set(@destination_line, @template_column, "1")
 			end
 
 			#use_config_manage_stock
 			@source_column = @source_dictionary["Item Code"]
 			@template_column = @template_dictionary["use_config_manage_stock"]
 			if "#{source.cell(source_line,@source_column)}" =~ /DG$/
-				template.set(@destination_line, @template_column, "1")
-			else
 				template.set(@destination_line, @template_column, "0")
+			else
+				template.set(@destination_line, @template_column, "1")
 			end
 
 			#stock_status_changed_auto
@@ -746,230 +784,14 @@ class TemplatesController < ApplicationController
 
 
 			########## Custom options columns ##########
+
 			@source_column = @source_dictionary["Item Code"]
 			if "#{source.cell(source_line,@source_column)}" =~ /DG$/
 
-				#############SIZE#############
-
-				#_custom_option_store
-				#template.set(@destination_line, 'EH', "default")
-				#_custom_option_type
-				@template_column = @template_dictionary["_custom_option_type"]
-				template.set(@destination_line, @template_column, "radio")
-				#_custom_option_title
-				@template_column = @template_dictionary["_custom_option_title"]
-				template.set(@destination_line, @template_column, "Size")
-				#_custom_option_is_required
-				@template_column = @template_dictionary["_custom_option_is_required"]
-				template.set(@destination_line, @template_column, "1")
-				#_custom_option_max_characters
-				@template_column = @template_dictionary["_custom_option_max_characters"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_sort_order
-				@template_column = @template_dictionary["_custom_option_sort_order"]
-				template.set(@destination_line, @template_column, "3")
-				
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Petite")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "size_petite")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "0")
-
-				@destination_line = @destination_line + 1
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Small")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "size_small")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "1")
-
-				@destination_line = @destination_line + 1
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Medium")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "size_medium")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "2")
-
-				@destination_line = @destination_line + 1
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Large")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "size_large")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "3")
-
-				@destination_line = @destination_line + 1
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Oversize")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "size_oversize")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "4")
-
-				@destination_line = @destination_line + 1
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Custom")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "size_custom")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "5")
-
-				@destination_line = @destination_line + 1
-
-
-				########### Canvas Quality ###############
-
-				#_custom_option_store
-				#template.set(@destination_line, 'EH', "default")
-				#_custom_option_type
-				@template_column = @template_dictionary["_custom_option_type"]
-				template.set(@destination_line, @template_column, "radio")
-				#_custom_option_title
-				@template_column = @template_dictionary["_custom_option_title"]
-				template.set(@destination_line, @template_column, "Canvas Quality")
-				#_custom_option_is_required
-				@template_column = @template_dictionary["_custom_option_is_required"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_max_characters
-				@template_column = @template_dictionary["_custom_option_max_characters"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_sort_order
-				@template_column = @template_dictionary["_custom_option_sort_order"]
-				template.set(@destination_line, @template_column, "2")
-				
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Standard")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "canvas_standard")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "0")
-
-				@destination_line = @destination_line + 1
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Rag")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "canvas_rag")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "1")
-
-				@destination_line = @destination_line + 1
-
-
-				########### Paper Quality ###############
-
-				#_custom_option_store
-				#template.set(@destination_line, 'EH', "default")
-				#_custom_option_type
-				@template_column = @template_dictionary["_custom_option_type"]
-				template.set(@destination_line, @template_column, "radio")
-				#_custom_option_title
-				@template_column = @template_dictionary["_custom_option_title"]
-				template.set(@destination_line, @template_column, "Paper Quality")
-				#_custom_option_is_required
-				@template_column = @template_dictionary["_custom_option_is_required"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_max_characters
-				@template_column = @template_dictionary["_custom_option_max_characters"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_sort_order
-				@template_column = @template_dictionary["_custom_option_sort_order"]
-				template.set(@destination_line, @template_column, "1")
-				
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Standard Quality Paper")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "paperquality_standard")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "0")
-
-				@destination_line = @destination_line + 1
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Special Quality Paper")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "paperquality_specialpaper")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "1")
-
-				@destination_line = @destination_line + 1
-
-
+				# MATERIAL: paper and canvas are static hard-coded options.
 
 				########### Material ###############
 
-				#_custom_option_store
-				#template.set(@destination_line, 'EH', "default")
 				#_custom_option_type
 				@template_column = @template_dictionary["_custom_option_type"]
 				template.set(@destination_line, @template_column, "radio")
@@ -989,31 +811,16 @@ class TemplatesController < ApplicationController
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Poster")
+				template.set(@destination_line, @template_column, "Paper")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
+				template.set(@destination_line, @template_column, "0.00")
 				#_custom_option_row_sku
 				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "material_poster")
+				template.set(@destination_line, @template_column, "material_paper")
 				#_custom_option_row_sort
 				@template_column = @template_dictionary["_custom_option_row_sort"]
 				template.set(@destination_line, @template_column, "0")
-
-				@destination_line = @destination_line + 1
-
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Photopaper")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "material_photopaper")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "1")
 
 				@destination_line = @destination_line + 1
 
@@ -1022,28 +829,262 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, @template_column, "Canvas")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "0")
+				template.set(@destination_line, @template_column, "0.00")
 				#_custom_option_row_sku
 				@template_column = @template_dictionary["_custom_option_row_sku"]
 				template.set(@destination_line, @template_column, "material_canvas")
 				#_custom_option_row_sort
 				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "2")
+				template.set(@destination_line, @template_column, "1")
 
 				@destination_line = @destination_line + 1
 
+				########### End of Material ###############
+
+
+				#############SIZE#############
+
+				#_custom_option_type
+				@template_column = @template_dictionary["_custom_option_type"]
+				template.set(@destination_line, @template_column, "radio")
+				#_custom_option_title
+				@template_column = @template_dictionary["_custom_option_title"]
+				template.set(@destination_line, @template_column, "Size")
+				#_custom_option_is_required
+				@template_column = @template_dictionary["_custom_option_is_required"]
+				template.set(@destination_line, @template_column, "1")
+				#_custom_option_max_characters
+				@template_column = @template_dictionary["_custom_option_max_characters"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_sort_order
+				@template_column = @template_dictionary["_custom_option_sort_order"]
+				template.set(@destination_line, @template_column, "1")
+				
+				# We need to extract the right prices, looking them up by (i.e. matching) the ratio column
+
+				# Extract and map the border treatments:
+				# 1) Scan for every row into the master paper and master canvas sheets
+				# 2) check if the ratio matches the one contained in the product attribute 
+				# 3) If the 2 ratios match, then copy the specific retail price option
+				
+				@source_column = @source_dictionary["UDF_RATIOCODE"]
+				time = "#{source.cell(source_line, @source_column)}".to_i
+				hours = time/3600
+				minutes = (time/60 - hours * 60)
+
+				@source_ratio_code = hours.to_s << ":" << minutes.to_s
+
+				@match_index = 0
+
+				# Master Paper Sheet
+				2.upto(retail_material_size_paper.last_row) do |retail_line|
+
+					@retail_column = @retail_material_size_paper_dictionary["Ratio"]
+					@retail_ratio_code = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
+
+
+					# Check for available sizes
+					if @source_ratio_code == @retail_ratio_code
+
+						#p "source ratio code: " + @source_ratio_code
+						#p "retail ratio code: " + @retail_ratio_code
+						#p "______________________"
+						
+						@retail_column = @retail_material_size_paper_dictionary["Ratio"]
+						@retail_ratio_code = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
+
+						@retail_column = @retail_material_size_paper_dictionary["SIZE DESCRIPTION"]
+						@size_name = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
+
+						@retail_column = @retail_material_size_paper_dictionary["Rolled Photo Paper Retail"]
+						@size_price = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
+
+
+						#_custom_option_row_title
+						@template_column = @template_dictionary["_custom_option_row_title"]
+						template.set(@destination_line, @template_column, @size_name)
+						#_custom_option_row_price
+						@template_column = @template_dictionary["_custom_option_row_price"]
+						template.set(@destination_line, @template_column, @size_price)
+						#_custom_option_row_sku
+						@template_column = @template_dictionary["_custom_option_row_sku"]
+						template.set(@destination_line, @template_column, "size_paper_" + @size_name.downcase)
+						#_custom_option_row_sort
+						@template_column = @template_dictionary["_custom_option_row_sort"]
+						template.set(@destination_line, @template_column, @match_index)
+
+						@destination_line = @destination_line + 1
+
+						@match_index = @match_index + 1
+
+					end
+
+				end
+
+				# Master Canvas Sheet
+				2.upto(retail_material_size_canvas.last_row) do |retail_line|
+
+					@retail_column = @retail_material_size_canvas_dictionary["Ratio"]
+					@retail_ratio_code = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"
+						
+						#p "source ratio code: " + @source_ratio_code
+						#p "retail ratio code: " + @retail_ratio_code
+						#p "______________________"
+					
+					@count = 0
+
+					# Check for available sizes and border treatments prices
+					if @source_ratio_code == @retail_ratio_code
+
+						@retail_column = @retail_material_size_canvas_dictionary["SIZE DESCRIPTION"]
+						@size_name = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"	
+						
+						@retail_column = @retail_material_size_canvas_dictionary["RETAIL PRICE"]
+						@size_price_treatment_1 = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"
+						
+						@retail_column = @retail_material_size_canvas_dictionary['ROLLED CANVAS 2" BLACK Border RETAIL']
+						@size_price_treatment_2 = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"
+
+						@retail_column = @retail_material_size_canvas_dictionary['ROLLED CANVAS 2" MIRROR Border RETAIL']
+						@size_price_treatment_3 = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"
+						
+						#p @size_price_treatment_1
+						#p @size_price_treatment_2
+						#p @size_price_treatment_3
+						
+						@size_prices = Array.new
+						@size_prices << @size_price_treatment_1 << @size_price_treatment_2 << @size_price_treatment_3
+
+						0.upto(2) do |count|
+
+							#_custom_option_row_title
+							@template_column = @template_dictionary["_custom_option_row_title"]
+							template.set(@destination_line, @template_column, @size_name)
+							#_custom_option_row_price
+							@template_column = @template_dictionary["_custom_option_row_price"]
+							template.set(@destination_line, @template_column, @size_prices[count])
+							#_custom_option_row_sku
+							@template_column = @template_dictionary["_custom_option_row_sku"]
+							template.set(@destination_line, @template_column, "size_canvas_" + @size_name.downcase + "_border_treatment_" + (count+1).to_s)
+							#_custom_option_row_sort
+							@template_column = @template_dictionary["_custom_option_row_sort"]
+							template.set(@destination_line, @template_column, @match_index + count)
+
+							@destination_line = @destination_line + 1
+
+							@count = count
+						
+						end
+
+						@match_index = @match_index + 1 + @count
+
+					end
+
+				end
+
+
+
+				########### Border Treatments ###############
+				# Border Treatments and Stretching options (including names) are static
+
+				#_custom_option_type
+				@template_column = @template_dictionary["_custom_option_type"]
+				template.set(@destination_line, @template_column, "radio")
+				#_custom_option_title
+				@template_column = @template_dictionary["_custom_option_title"]
+				template.set(@destination_line, @template_column, "Border Treatments")
+				#_custom_option_is_required
+				@template_column = @template_dictionary["_custom_option_is_required"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_max_characters
+				@template_column = @template_dictionary["_custom_option_max_characters"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_sort_order
+				@template_column = @template_dictionary["_custom_option_sort_order"]
+				template.set(@destination_line, @template_column, "1")
+				
+
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Decal")
+				template.set(@destination_line, @template_column, "3\" of white")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
 				template.set(@destination_line, @template_column, "0")
 				#_custom_option_row_sku
 				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "material_decal")
+				template.set(@destination_line, @template_column, "border_treatment_3_inches_of_white")
 				#_custom_option_row_sort
 				@template_column = @template_dictionary["_custom_option_row_sort"]
+				template.set(@destination_line, @template_column, "0")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				@template_column = @template_dictionary["_custom_option_row_title"]
+				template.set(@destination_line, @template_column, "2\" of black with 1\" of white")
+				#_custom_option_row_price
+				@template_column = @template_dictionary["_custom_option_row_price"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_row_sku
+				@template_column = @template_dictionary["_custom_option_row_sku"]
+				template.set(@destination_line, @template_column, "border_treatment_2_inches_of_black_and_1_inch_of_white")
+				#_custom_option_row_sort
+				@template_column = @template_dictionary["_custom_option_row_sort"]
+				template.set(@destination_line, @template_column, "1")
+
+				@destination_line = @destination_line + 1
+
+				#_custom_option_row_title
+				@template_column = @template_dictionary["_custom_option_row_title"]
+				template.set(@destination_line, @template_column, "2\" mirrored with 1\" of white")
+				#_custom_option_row_price
+				@template_column = @template_dictionary["_custom_option_row_price"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_row_sku
+				@template_column = @template_dictionary["_custom_option_row_sku"]
+				template.set(@destination_line, @template_column, "border_treatment_2_inches_mirrored_and_1_inch_of_white")
+				#_custom_option_row_sort
+				@template_column = @template_dictionary["_custom_option_row_sort"]
+				template.set(@destination_line, @template_column, "2")
+
+				@destination_line = @destination_line + 1
+				
+
+
+				########### Canvas Stretching ###############
+
+				#_custom_option_type
+				@template_column = @template_dictionary["_custom_option_type"]
+				template.set(@destination_line, @template_column, "checkbox")
+				#_custom_option_title
+				@template_column = @template_dictionary["_custom_option_title"]
+				template.set(@destination_line, @template_column, "Canvas Stretching")
+				#_custom_option_is_required
+				@template_column = @template_dictionary["_custom_option_is_required"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_max_characters
+				@template_column = @template_dictionary["_custom_option_max_characters"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_sort_order
+				@template_column = @template_dictionary["_custom_option_sort_order"]
 				template.set(@destination_line, @template_column, "3")
+				
+
+				#_custom_option_row_title
+				@template_column = @template_dictionary["_custom_option_row_title"]
+				template.set(@destination_line, @template_column, "Stretch it for me")
+				#_custom_option_row_price
+				@template_column = @template_dictionary["_custom_option_row_price"]
+				template.set(@destination_line, @template_column, "10.00")
+				#_custom_option_row_sku
+				@template_column = @template_dictionary["_custom_option_row_sku"]
+				template.set(@destination_line, @template_column, "canvas_stretching")
+				#_custom_option_row_sort
+				@template_column = @template_dictionary["_custom_option_row_sort"]
+				template.set(@destination_line, @template_column, "0")
+
+				@destination_line = @destination_line + 1
+
 
 			end	
 			
