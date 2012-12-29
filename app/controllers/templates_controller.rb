@@ -965,7 +965,7 @@ class TemplatesController < ApplicationController
 							template.set(@destination_line, @template_column, @size_prices[count])
 							#_custom_option_row_sku
 							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "size_canvas_" + @size_name.downcase + "_border_treatment_" + (count+1).to_s)
+							template.set(@destination_line, @template_column, "size_canvas_" + @size_name.downcase + "_treatment_" + (count+1).to_s)
 							#_custom_option_row_sort
 							@template_column = @template_dictionary["_custom_option_row_sort"]
 							template.set(@destination_line, @template_column, @match_index + count)
@@ -992,16 +992,31 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, @template_column, "radio")
 				#_custom_option_title
 				@template_column = @template_dictionary["_custom_option_title"]
-				template.set(@destination_line, @template_column, "Border Treatments")
+				template.set(@destination_line, @template_column, "Treatments")
 				#_custom_option_is_required
 				@template_column = @template_dictionary["_custom_option_is_required"]
-				template.set(@destination_line, @template_column, "0")
+				template.set(@destination_line, @template_column, "1")
 				#_custom_option_max_characters
 				@template_column = @template_dictionary["_custom_option_max_characters"]
 				template.set(@destination_line, @template_column, "0")
 				#_custom_option_sort_order
 				@template_column = @template_dictionary["_custom_option_sort_order"]
 				template.set(@destination_line, @template_column, "1")
+
+				#_custom_option_row_title
+				@template_column = @template_dictionary["_custom_option_row_title"]
+				template.set(@destination_line, @template_column, "None")
+				#_custom_option_row_price
+				@template_column = @template_dictionary["_custom_option_row_price"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_row_sku
+				@template_column = @template_dictionary["_custom_option_row_sku"]
+				template.set(@destination_line, @template_column, "treatments_none")
+				#_custom_option_row_sort
+				@template_column = @template_dictionary["_custom_option_row_sort"]
+				template.set(@destination_line, @template_column, "0")
+
+				@destination_line = @destination_line + 1
 				
 
 				#_custom_option_row_title
@@ -1015,7 +1030,7 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, @template_column, "border_treatment_3_inches_of_white")
 				#_custom_option_row_sort
 				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "0")
+				template.set(@destination_line, @template_column, "1")
 
 				@destination_line = @destination_line + 1
 
@@ -1030,7 +1045,7 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, @template_column, "border_treatment_2_inches_of_black_and_1_inch_of_white")
 				#_custom_option_row_sort
 				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "1")
+				template.set(@destination_line, @template_column, "2")
 
 				@destination_line = @destination_line + 1
 
@@ -1045,7 +1060,7 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, @template_column, "border_treatment_2_inches_mirrored_and_1_inch_of_white")
 				#_custom_option_row_sort
 				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "2")
+				template.set(@destination_line, @template_column, "3")
 
 				@destination_line = @destination_line + 1
 				
