@@ -899,6 +899,9 @@ class TemplatesController < ApplicationController
 						@retail_column = @retail_material_size_paper_dictionary["Rolled Photo Paper Retail"]
 						@size_price = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
+						@retail_column = @retail_material_size_paper_dictionary["UI"]
+						@size_paper_ui = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i
+
 
 						#_custom_option_row_title
 						@template_column = @template_dictionary["_custom_option_row_title"]
@@ -908,7 +911,7 @@ class TemplatesController < ApplicationController
 						template.set(@destination_line, @template_column, @size_price)
 						#_custom_option_row_sku
 						@template_column = @template_dictionary["_custom_option_row_sku"]
-						template.set(@destination_line, @template_column, "size_paper_" + @size_name.downcase)
+						template.set(@destination_line, @template_column, "size_paper_" + @size_name.downcase + "_ui_" + @size_paper_ui.to_s)
 						#_custom_option_row_sort
 						@template_column = @template_dictionary["_custom_option_row_sort"]
 						template.set(@destination_line, @template_column, @match_index)
@@ -955,6 +958,9 @@ class TemplatesController < ApplicationController
 						@size_prices = Array.new
 						@size_prices << @size_price_treatment_1 << @size_price_treatment_2 << @size_price_treatment_3
 
+						@retail_column = @retail_material_size_canvas_dictionary["UI"]
+						@size_canvas_ui = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}".to_i
+
 						0.upto(2) do |count|
 
 							#_custom_option_row_title
@@ -965,7 +971,7 @@ class TemplatesController < ApplicationController
 							template.set(@destination_line, @template_column, @size_prices[count])
 							#_custom_option_row_sku
 							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "size_canvas_" + @size_name.downcase + "_treatment_" + (count+1).to_s)
+							template.set(@destination_line, @template_column, "size_canvas_" + @size_name.downcase + "_treatment_" + (count+1).to_s + "_ui_" + @size_canvas_ui.to_s)
 							#_custom_option_row_sort
 							@template_column = @template_dictionary["_custom_option_row_sort"]
 							template.set(@destination_line, @template_column, @match_index + count)
