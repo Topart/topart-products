@@ -1099,8 +1099,8 @@ class TemplatesController < ApplicationController
 					@retail_column = @retail_framing_stretching_matting_dictionary["Descripton"]
 					@frame_name = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
 
-					@frame_name_for_sku = @frame_name.downcase.tr(" ", "_")
-					@frame_name_for_sku = @frame_name_for_sku.tr("/", "-")
+					@frame_name = @frame_name.downcase.tr(" ", "_")
+					@frame_name_for_sku = @frame_name.tr("/", "-")
 					@frame_name_for_sku = @frame_name_for_sku.tr("\"", "inches")
 
 					@retail_column = @retail_framing_stretching_matting_dictionary["United Inch TAR Retail"]
