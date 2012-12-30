@@ -1021,7 +1021,7 @@ class TemplatesController < ApplicationController
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "3\" of white")
+				template.set(@destination_line, @template_column, "3\" white")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
 				template.set(@destination_line, @template_column, "0")
@@ -1036,7 +1036,7 @@ class TemplatesController < ApplicationController
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "2\" of black with 1\" of white")
+				template.set(@destination_line, @template_column, "2\" black 1\" white")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
 				template.set(@destination_line, @template_column, "0")
@@ -1051,7 +1051,7 @@ class TemplatesController < ApplicationController
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "2\" mirrored with 1\" of white")
+				template.set(@destination_line, @template_column, "2\" mirrored 1\" white")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
 				template.set(@destination_line, @template_column, "0")
@@ -1066,39 +1066,122 @@ class TemplatesController < ApplicationController
 				
 
 
-				########### Canvas Stretching ###############
+				########### FRAMING ###########
+				# Master Framing
 
 				#_custom_option_type
 				@template_column = @template_dictionary["_custom_option_type"]
-				template.set(@destination_line, @template_column, "checkbox")
+				template.set(@destination_line, @template_column, "drop_down")
 				#_custom_option_title
 				@template_column = @template_dictionary["_custom_option_title"]
-				template.set(@destination_line, @template_column, "Canvas Stretching")
+				template.set(@destination_line, @template_column, "Frame")
 				#_custom_option_is_required
 				@template_column = @template_dictionary["_custom_option_is_required"]
-				template.set(@destination_line, @template_column, "0")
+				template.set(@destination_line, @template_column, "1")
 				#_custom_option_max_characters
 				@template_column = @template_dictionary["_custom_option_max_characters"]
 				template.set(@destination_line, @template_column, "0")
 				#_custom_option_sort_order
 				@template_column = @template_dictionary["_custom_option_sort_order"]
-				template.set(@destination_line, @template_column, "3")
-				
+				template.set(@destination_line, @template_column, "4")
 
-				#_custom_option_row_title
-				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "Stretch it for me")
-				#_custom_option_row_price
-				@template_column = @template_dictionary["_custom_option_row_price"]
-				template.set(@destination_line, @template_column, "10.00")
-				#_custom_option_row_sku
-				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "canvas_stretching")
-				#_custom_option_row_sort
-				@template_column = @template_dictionary["_custom_option_row_sort"]
-				template.set(@destination_line, @template_column, "0")
+				@frame_count = 0;
 
-				@destination_line = @destination_line + 1
+				2.upto(retail_framing_stretching_matting.last_row) do |retail_line|
+
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["Descripton"]
+					@frame_name = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+					@frame_name = @frame_name.downcase.tr(" ", "_")
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["United Inch TAR Retail"]
+					@frame_ui_price = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["Flat Mounting Cost"]
+					@frame_flat_mounting_price = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+					########### Canvas Stretching ###############
+					if @frame_name == "1.5\"_stretcher_bars"
+		
+						#_custom_option_type
+						@template_column = @template_dictionary["_custom_option_type"]
+						template.set(@destination_line, @template_column, "checkbox")
+						#_custom_option_title
+						@template_column = @template_dictionary["_custom_option_title"]
+						template.set(@destination_line, @template_column, "Canvas Stretching")
+						#_custom_option_is_required
+						@template_column = @template_dictionary["_custom_option_is_required"]
+						template.set(@destination_line, @template_column, "0")
+						#_custom_option_max_characters
+						@template_column = @template_dictionary["_custom_option_max_characters"]
+						template.set(@destination_line, @template_column, "0")
+						#_custom_option_sort_order
+						@template_column = @template_dictionary["_custom_option_sort_order"]
+						template.set(@destination_line, @template_column, "3")
+						
+
+						#_custom_option_row_title
+						@template_column = @template_dictionary["_custom_option_row_title"]
+						template.set(@destination_line, @template_column, "Stretch it for me")
+						#_custom_option_row_price
+						@template_column = @template_dictionary["_custom_option_row_price"]
+						template.set(@destination_line, @template_column, @frame_ui_price)
+						#_custom_option_row_sku
+						@template_column = @template_dictionary["_custom_option_row_sku"]
+						template.set(@destination_line, @template_column, "canvas_stretching")
+						#_custom_option_row_sort
+						@template_column = @template_dictionary["_custom_option_row_sort"]
+						template.set(@destination_line, @template_column, "0")
+
+						@destination_line = @destination_line + 1
+
+					end
+
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["Available for Paper"]
+					@frame_for_paper = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["Available for Canvas"]
+					@frame_for_canvas = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+					
+
+					# FRAMING: check if the description contains the substring "Frame"
+					if @frame_name.downcase.include?("frame")
+
+						#_custom_option_row_title
+						@template_column = @template_dictionary["_custom_option_row_title"]
+						template.set(@destination_line, @template_column, @frame_name)
+						#_custom_option_row_price
+						@template_column = @template_dictionary["_custom_option_row_price"]
+						template.set(@destination_line, @template_column, @frame_ui_price)
+						
+						# Available for Paper
+						if @frame_for_paper.downcase == "y"
+							#_custom_option_row_sku
+							@template_column = @template_dictionary["_custom_option_row_sku"]
+							template.set(@destination_line, @template_column, "frame_paper" + @frame_name.downcase)
+						end
+
+						# Available for Canvas
+						if @frame_for_canvas.downcase == "y"
+							#_custom_option_row_sku
+							@template_column = @template_dictionary["_custom_option_row_sku"]
+							template.set(@destination_line, @template_column, "frame_canvas" + @frame_name.downcase)
+						end
+
+						#_custom_option_row_sort
+						@template_column = @template_dictionary["_custom_option_row_sort"]
+						template.set(@destination_line, @template_column, @frame_count)
+
+						@destination_line = @destination_line + 1
+
+						@frame_count = @frame_count + 1
+
+					end
+
+				end
 
 
 			end	
