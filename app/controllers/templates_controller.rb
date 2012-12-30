@@ -1099,7 +1099,9 @@ class TemplatesController < ApplicationController
 					@retail_column = @retail_framing_stretching_matting_dictionary["Descripton"]
 					@frame_name = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
 
-					@frame_name = @frame_name.downcase.tr(" ", "_")
+					@frame_name_for_sku = @frame_name.downcase.tr(" ", "_")
+					@frame_name_for_sku = @frame_name_for_sku.tr("/", "-")
+					@frame_name_for_sku = @frame_name_for_sku.tr("\"", "inches")
 
 					@retail_column = @retail_framing_stretching_matting_dictionary["United Inch TAR Retail"]
 					@frame_ui_price = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
@@ -1167,14 +1169,14 @@ class TemplatesController < ApplicationController
 						if @frame_for_paper.downcase == "y"
 							#_custom_option_row_sku
 							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "frame_paper" + @frame_name.downcase)
+							template.set(@destination_line, @template_column, "frame_paper_" + @frame_name_for_sku)
 						end
 
 						# Available for Canvas
 						if @frame_for_canvas.downcase == "y"
 							#_custom_option_row_sku
 							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "frame_canvas" + @frame_name.downcase)
+							template.set(@destination_line, @template_column, "frame_canvas_" + @frame_name_for_sku)
 						end
 
 						#_custom_option_row_sort
