@@ -876,6 +876,8 @@ class TemplatesController < ApplicationController
 
 				@match_index = 0
 
+				@ui_canvas_array = Array.new
+
 				# Master Paper Sheet
 				2.upto(retail_material_size_paper.last_row) do |retail_line|
 
@@ -960,6 +962,9 @@ class TemplatesController < ApplicationController
 
 						@retail_column = @retail_material_size_canvas_dictionary["UI"]
 						@size_canvas_ui = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}".to_i
+
+						# Add each canvas ui to the ui array
+						@ui_canvas_array << @size_canvas_ui
 
 						0.upto(2) do |count|
 
@@ -1133,20 +1138,29 @@ class TemplatesController < ApplicationController
 						template.set(@destination_line, @template_column, "3")
 						
 
-						#_custom_option_row_title
-						@template_column = @template_dictionary["_custom_option_row_title"]
-						template.set(@destination_line, @template_column, "Stretch it for me")
-						#_custom_option_row_price
-						@template_column = @template_dictionary["_custom_option_row_price"]
-						template.set(@destination_line, @template_column, @frame_ui_price)
-						#_custom_option_row_sku
-						@template_column = @template_dictionary["_custom_option_row_sku"]
-						template.set(@destination_line, @template_column, "canvas_stretching")
-						#_custom_option_row_sort
-						@template_column = @template_dictionary["_custom_option_row_sort"]
-						template.set(@destination_line, @template_column, "0")
+						@stretching_index = 0
 
-						@destination_line = @destination_line + 1
+						0.upto(@ui_canvas_array.size - 1) do |ui_line|
+
+							@frame_price = @ui_canvas_array[ui_line].to_f * @frame_ui_price.to_f
+							p @frame_price.to_s
+
+							#_custom_option_row_title
+							@template_column = @template_dictionary["_custom_option_row_title"]
+							template.set(@destination_line, @template_column, "Stretch it for me")
+							#_custom_option_row_price
+							@template_column = @template_dictionary["_custom_option_row_price"]
+							template.set(@destination_line, @template_column, @frame_price.to_s)
+							#_custom_option_row_sku
+							@template_column = @template_dictionary["_custom_option_row_sku"]
+							template.set(@destination_line, @template_column, "canvas_stretching_ui_" + @ui_canvas_array[ui_line].to_s)
+							#_custom_option_row_sort
+							@template_column = @template_dictionary["_custom_option_row_sort"]
+							template.set(@destination_line, @template_column, @stretching_index)
+
+							@destination_line = @destination_line + 1
+							@stretching_index = @stretching_index + 1
+						end
 
 					end
 
