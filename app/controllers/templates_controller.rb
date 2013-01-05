@@ -876,6 +876,7 @@ class TemplatesController < ApplicationController
 
 				@match_index = 0
 
+				@ui_paper_array = Array.new
 				@ui_canvas_array = Array.new
 
 				# Master Paper Sheet
@@ -904,6 +905,11 @@ class TemplatesController < ApplicationController
 						@retail_column = @retail_material_size_paper_dictionary["UI"]
 						@size_paper_ui = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i
 
+
+						# Add each paper ui to the paper ui array
+						if ( @size_paper_ui != 0 )
+							@ui_paper_array << @size_paper_ui
+						end
 
 						#_custom_option_row_title
 						@template_column = @template_dictionary["_custom_option_row_title"]
@@ -963,8 +969,10 @@ class TemplatesController < ApplicationController
 						@retail_column = @retail_material_size_canvas_dictionary["UI"]
 						@size_canvas_ui = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}".to_i
 
-						# Add each canvas ui to the ui array
-						@ui_canvas_array << @size_canvas_ui
+						# Add each canvas ui to the canvas ui array
+						if ( @size_canvas_ui != 0 )
+							@ui_canvas_array << @size_canvas_ui
+						end
 
 						0.upto(2) do |count|
 
@@ -1098,6 +1106,27 @@ class TemplatesController < ApplicationController
 
 				@frame_count = 0;
 
+				# Add the No Frame option
+				#_custom_option_row_sku
+				@template_column = @template_dictionary["_custom_option_row_sku"]
+				template.set(@destination_line, @template_column, "frame_none")
+
+				#_custom_option_row_title
+				@template_column = @template_dictionary["_custom_option_row_title"]
+				template.set(@destination_line, @template_column, "No Frame")
+
+				#_custom_option_row_price
+				@template_column = @template_dictionary["_custom_option_row_price"]
+				template.set(@destination_line, @template_column, "0.0")
+
+				#_custom_option_row_sort
+				@template_column = @template_dictionary["_custom_option_row_sort"]
+				template.set(@destination_line, @template_column, @frame_count)
+
+				@destination_line = @destination_line + 1
+
+				@frame_count = @frame_count + 1
+
 				2.upto(retail_framing_stretching_matting.last_row) do |retail_line|
 
 
@@ -1143,7 +1172,6 @@ class TemplatesController < ApplicationController
 						0.upto(@ui_canvas_array.size - 1) do |ui_line|
 
 							@frame_price = @ui_canvas_array[ui_line].to_f * @frame_ui_price.to_f
-							p @frame_price.to_s
 
 							#_custom_option_row_title
 							@template_column = @template_dictionary["_custom_option_row_title"]
@@ -1176,34 +1204,67 @@ class TemplatesController < ApplicationController
 					# FRAMING: check if the description contains the substring "Frame"
 					if @frame_name.downcase.include?("frame")
 
-						#_custom_option_row_title
-						@template_column = @template_dictionary["_custom_option_row_title"]
-						template.set(@destination_line, @template_column, @frame_name)
-						#_custom_option_row_price
-						@template_column = @template_dictionary["_custom_option_row_price"]
-						template.set(@destination_line, @template_column, @frame_ui_price)
-						
+						# Each framing option has a different price for each size (UI) available
+
 						# Available for Paper
 						if @frame_for_paper.downcase == "y"
-							#_custom_option_row_sku
-							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "frame_paper_" + @frame_item_number)
+
+							0.upto(@ui_paper_array.size - 1) do |ui_line|
+
+								@frame_price = @ui_paper_array[ui_line].to_f * @frame_ui_price.to_f
+
+								#_custom_option_row_sku
+								@template_column = @template_dictionary["_custom_option_row_sku"]
+								template.set(@destination_line, @template_column, "frame_paper_" + @frame_item_number + "_" + @ui_paper_array[ui_line].to_s)
+
+								#_custom_option_row_title
+								@template_column = @template_dictionary["_custom_option_row_title"]
+								template.set(@destination_line, @template_column, @frame_name + "- ui_" + @ui_paper_array[ui_line].to_s)
+
+								#_custom_option_row_price
+								@template_column = @template_dictionary["_custom_option_row_price"]
+								template.set(@destination_line, @template_column, @frame_price.to_s)
+
+								#_custom_option_row_sort
+								@template_column = @template_dictionary["_custom_option_row_sort"]
+								template.set(@destination_line, @template_column, @frame_count)
+
+								@destination_line = @destination_line + 1
+
+								@frame_count = @frame_count + 1
+
+							end
 						end
 
 						# Available for Canvas
 						if @frame_for_canvas.downcase == "y"
-							#_custom_option_row_sku
-							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "frame_canvas_" + @frame_item_number)
+
+							0.upto(@ui_canvas_array.size - 1) do |ui_line|
+
+								@frame_price = @ui_canvas_array[ui_line].to_f * @frame_ui_price.to_f
+
+								#_custom_option_row_sku
+								@template_column = @template_dictionary["_custom_option_row_sku"]
+								template.set(@destination_line, @template_column, "frame_canvas_" + @frame_item_number + "_" + @ui_canvas_array[ui_line].to_s)
+
+								#_custom_option_row_title
+								@template_column = @template_dictionary["_custom_option_row_title"]
+								template.set(@destination_line, @template_column, @frame_name + "- ui_" + @ui_canvas_array[ui_line].to_s)
+
+								#_custom_option_row_price
+								@template_column = @template_dictionary["_custom_option_row_price"]
+								template.set(@destination_line, @template_column, @frame_price.to_s)
+
+								#_custom_option_row_sort
+								@template_column = @template_dictionary["_custom_option_row_sort"]
+								template.set(@destination_line, @template_column, @frame_count)
+
+								@destination_line = @destination_line + 1
+
+								@frame_count = @frame_count + 1
+							end
 						end
 
-						#_custom_option_row_sort
-						@template_column = @template_dictionary["_custom_option_row_sort"]
-						template.set(@destination_line, @template_column, @frame_count)
-
-						@destination_line = @destination_line + 1
-
-						@frame_count = @frame_count + 1
 
 					end
 
