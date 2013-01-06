@@ -1215,7 +1215,7 @@ class TemplatesController < ApplicationController
 
 								#_custom_option_row_sku
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "frame_paper_" + @frame_item_number + "_" + @ui_paper_array[ui_line].to_s)
+								template.set(@destination_line, @template_column, "frame_paper_" + @frame_item_number + "_ui_" + @ui_paper_array[ui_line].to_s)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
@@ -1245,7 +1245,7 @@ class TemplatesController < ApplicationController
 
 								#_custom_option_row_sku
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "frame_canvas_" + @frame_item_number + "_" + @ui_canvas_array[ui_line].to_s)
+								template.set(@destination_line, @template_column, "frame_canvas_" + @frame_item_number + "_ui_" + @ui_canvas_array[ui_line].to_s)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
