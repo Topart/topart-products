@@ -905,6 +905,12 @@ class TemplatesController < ApplicationController
 						@retail_column = @retail_material_size_paper_dictionary["UI"]
 						@size_paper_ui = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i
 
+						@retail_column = @retail_material_size_paper_dictionary["Length"]
+						@size_paper_length = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i.to_s
+
+						@retail_column = @retail_material_size_paper_dictionary["Width"]
+						@size_paper_width = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i.to_s
+
 
 						# Add each paper ui to the paper ui array
 						if ( @size_paper_ui != 0 )
@@ -913,7 +919,7 @@ class TemplatesController < ApplicationController
 
 						#_custom_option_row_title
 						@template_column = @template_dictionary["_custom_option_row_title"]
-						template.set(@destination_line, @template_column, @size_name)
+						template.set(@destination_line, @template_column, @size_name + ": " + @size_paper_length + "\""  + "x" + @size_paper_width + "\"")
 						#_custom_option_row_price
 						@template_column = @template_dictionary["_custom_option_row_price"]
 						template.set(@destination_line, @template_column, @size_price)
@@ -958,6 +964,12 @@ class TemplatesController < ApplicationController
 
 						@retail_column = @retail_material_size_canvas_dictionary['ROLLED CANVAS 2" MIRROR Border RETAIL']
 						@size_price_treatment_3 = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"
+
+						@retail_column = @retail_material_size_canvas_dictionary["Length"]
+						@size_canvas_length = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}".to_i.to_s
+
+						@retail_column = @retail_material_size_canvas_dictionary["Width"]
+						@size_canvas_width = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}".to_i.to_s
 						
 						#p @size_price_treatment_1
 						#p @size_price_treatment_2
@@ -978,7 +990,7 @@ class TemplatesController < ApplicationController
 
 							#_custom_option_row_title
 							@template_column = @template_dictionary["_custom_option_row_title"]
-							template.set(@destination_line, @template_column, @size_name)
+							template.set(@destination_line, @template_column, @size_name + ": " + @size_canvas_length + "\""  + "x" + @size_canvas_width + "\"")
 							#_custom_option_row_price
 							@template_column = @template_dictionary["_custom_option_row_price"]
 							template.set(@destination_line, @template_column, @size_prices[count])
