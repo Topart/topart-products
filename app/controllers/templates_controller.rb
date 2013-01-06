@@ -1117,6 +1117,7 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, @template_column, "4")
 
 				@frame_count = 0;
+				@mats_count = 0;
 
 				# Add the No Frame option
 				#_custom_option_row_sku
@@ -1214,7 +1215,7 @@ class TemplatesController < ApplicationController
 					
 
 					# FRAMING: check if the description contains the substring "Frame"
-					if @frame_name.downcase.include?("frame")
+					if @frame_name.downcase.include?("frame") and !@frame_name.downcase.include?("mat")
 
 						# Each framing option has a different price for each size (UI) available
 
@@ -1283,6 +1284,130 @@ class TemplatesController < ApplicationController
 				end
 
 
+				########### MATTING ###########
+				# Master Framing
+
+				#_custom_option_type
+				@template_column = @template_dictionary["_custom_option_type"]
+				template.set(@destination_line, @template_column, "drop_down")
+				#_custom_option_title
+				@template_column = @template_dictionary["_custom_option_title"]
+				template.set(@destination_line, @template_column, "Mats")
+				#_custom_option_is_required
+				@template_column = @template_dictionary["_custom_option_is_required"]
+				template.set(@destination_line, @template_column, "1")
+				#_custom_option_max_characters
+				@template_column = @template_dictionary["_custom_option_max_characters"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_sort_order
+				@template_column = @template_dictionary["_custom_option_sort_order"]
+				template.set(@destination_line, @template_column, "5")
+
+				# Add the No Mats option
+				#_custom_option_row_sku
+				@template_column = @template_dictionary["_custom_option_row_sku"]
+				template.set(@destination_line, @template_column, "mats_none")
+
+				#_custom_option_row_title
+				@template_column = @template_dictionary["_custom_option_row_title"]
+				template.set(@destination_line, @template_column, "No Mats")
+
+				#_custom_option_row_price
+				@template_column = @template_dictionary["_custom_option_row_price"]
+				template.set(@destination_line, @template_column, "0.0")
+
+				#_custom_option_row_sort
+				@template_column = @template_dictionary["_custom_option_row_sort"]
+				template.set(@destination_line, @template_column, @mats_count)
+
+				@destination_line = @destination_line + 1
+
+				@mats_count = @mats_count + 1
+
+				2.upto(retail_framing_stretching_matting.last_row) do |retail_line|
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["Descripton"]
+					@mat_name = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["Item Number"]
+					@mat_item_number = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+					@mat_item_number = @mat_item_number.downcase
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["United Inch TAR Retail"]
+					@mat_ui_price = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["Available for Paper"]
+					@mats_for_paper = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+					@retail_column = @retail_framing_stretching_matting_dictionary["Available for Canvas"]
+					@mats_for_canvas = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
+
+					# MATTING: check if the description contains the substring "Mat"
+					if @mat_name.downcase.include?("mat") and !@mat_name.downcase.include?("frame")
+
+						# Each framing option has a different price for each size (UI) available
+
+						# Available for Paper
+						if @mats_for_paper.downcase == "y"
+
+							0.upto(@ui_paper_array.size - 1) do |ui_line|
+
+								@mat_price = @ui_paper_array[ui_line].to_f * @mat_ui_price.to_f
+
+								#_custom_option_row_sku
+								@template_column = @template_dictionary["_custom_option_row_sku"]
+								template.set(@destination_line, @template_column, "mats_paper_" + @mat_item_number + "_ui_" + @ui_paper_array[ui_line].to_s)
+
+								#_custom_option_row_title
+								@template_column = @template_dictionary["_custom_option_row_title"]
+								template.set(@destination_line, @template_column, @mat_name + "- ui_" + @ui_paper_array[ui_line].to_s)
+
+								#_custom_option_row_price
+								@template_column = @template_dictionary["_custom_option_row_price"]
+								template.set(@destination_line, @template_column, @mat_price.to_s)
+
+								#_custom_option_row_sort
+								@template_column = @template_dictionary["_custom_option_row_sort"]
+								template.set(@destination_line, @template_column, @mats_count)
+
+								@destination_line = @destination_line + 1
+
+								@mats_count = @mats_count + 1
+
+							end
+						end
+
+						# Available for Canvas
+						if @mats_for_canvas.downcase == "y"
+
+							0.upto(@ui_canvas_array.size - 1) do |ui_line|
+
+								@mat_price = @ui_canvas_array[ui_line].to_f * @mat_ui_price.to_f
+
+								#_custom_option_row_sku
+								@template_column = @template_dictionary["_custom_option_row_sku"]
+								template.set(@destination_line, @template_column, "mats_canvas_" + @mat_item_number + "_ui_" + @ui_canvas_array[ui_line].to_s)
+
+								#_custom_option_row_title
+								@template_column = @template_dictionary["_custom_option_row_title"]
+								template.set(@destination_line, @template_column, @mat_name + "- ui_" + @ui_canvas_array[ui_line].to_s)
+
+								#_custom_option_row_price
+								@template_column = @template_dictionary["_custom_option_row_price"]
+								template.set(@destination_line, @template_column, @mat_price.to_s)
+
+								#_custom_option_row_sort
+								@template_column = @template_dictionary["_custom_option_row_sort"]
+								template.set(@destination_line, @template_column, @mats_count)
+
+								@destination_line = @destination_line + 1
+
+								@mats_count = @mats_count + 1
+							end
+						end
+					end
+				end
 			end	
 			
 			
