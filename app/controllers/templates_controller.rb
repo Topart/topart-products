@@ -1364,7 +1364,7 @@ class TemplatesController < ApplicationController
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
-								template.set(@destination_line, @template_column, @mat_name + "- ui_" + @ui_paper_array[ui_line].to_s)
+								template.set(@destination_line, @template_column, @mat_name.truncate(20))
 
 								#_custom_option_row_price
 								@template_column = @template_dictionary["_custom_option_row_price"]
