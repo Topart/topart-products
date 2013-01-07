@@ -77,7 +77,7 @@ class TemplatesController < ApplicationController
 		# FRAMING, STRETCHING, MATTING
 		# Automatically scan the source column names and store them in an associative array
 		@retail_framing_stretching_matting_dictionary = Hash.new
-		"A".upto("N") do |alphabet_character|
+		"A".upto("P") do |alphabet_character|
 
 			@cell_content = "#{retail_framing_stretching_matting.cell(2, alphabet_character)}"
 			@retail_framing_stretching_matting_dictionary[@cell_content] = alphabet_character
@@ -1289,7 +1289,7 @@ class TemplatesController < ApplicationController
 
 				#_custom_option_type
 				@template_column = @template_dictionary["_custom_option_type"]
-				template.set(@destination_line, @template_column, "drop_down")
+				template.set(@destination_line, @template_column, "radio")
 				#_custom_option_title
 				@template_column = @template_dictionary["_custom_option_title"]
 				template.set(@destination_line, @template_column, "Mats")
@@ -1342,6 +1342,9 @@ class TemplatesController < ApplicationController
 					@retail_column = @retail_framing_stretching_matting_dictionary["Available for Canvas"]
 					@mats_for_canvas = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
 
+					@retail_column = @retail_framing_stretching_matting_dictionary["Color Code"]
+					@mats_color = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
+
 
 					# MATTING: check if the description contains the substring "Mat"
 					if @mat_name.downcase.include?("mat") and !@mat_name.downcase.include?("frame")
@@ -1357,7 +1360,7 @@ class TemplatesController < ApplicationController
 
 								#_custom_option_row_sku
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "mats_paper_" + @mat_item_number + "_ui_" + @ui_paper_array[ui_line].to_s)
+								template.set(@destination_line, @template_column, "mats_paper_" + @mat_item_number + "_ui_" + @ui_paper_array[ui_line].to_s + "_" + @mats_color)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
@@ -1378,7 +1381,7 @@ class TemplatesController < ApplicationController
 							end
 						end
 
-						# Available for Canvas
+						# Available for Canvas: actually matting is not available for canvas, but we leave this for potential future use
 						if @mats_for_canvas.downcase == "y"
 
 							0.upto(@ui_canvas_array.size - 1) do |ui_line|
@@ -1408,6 +1411,43 @@ class TemplatesController < ApplicationController
 						end
 					end
 				end
+
+				####### CUSTOM SIZE: HEIGHT #########
+				@template_column = @template_dictionary["_custom_option_type"]
+				template.set(@destination_line, @template_column, "field")
+				#_custom_option_title
+				@template_column = @template_dictionary["_custom_option_title"]
+				template.set(@destination_line, @template_column, "Height")
+				#_custom_option_is_required
+				@template_column = @template_dictionary["_custom_option_is_required"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_max_characters
+				@template_column = @template_dictionary["_custom_option_max_characters"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_sort_order
+				@template_column = @template_dictionary["_custom_option_sort_order"]
+				template.set(@destination_line, @template_column, "6")
+
+				@destination_line = @destination_line + 1
+
+				####### CUSTOM SIZE: WIDTH #########
+				@template_column = @template_dictionary["_custom_option_type"]
+				template.set(@destination_line, @template_column, "field")
+				#_custom_option_title
+				@template_column = @template_dictionary["_custom_option_title"]
+				template.set(@destination_line, @template_column, "Width")
+				#_custom_option_is_required
+				@template_column = @template_dictionary["_custom_option_is_required"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_max_characters
+				@template_column = @template_dictionary["_custom_option_max_characters"]
+				template.set(@destination_line, @template_column, "0")
+				#_custom_option_sort_order
+				@template_column = @template_dictionary["_custom_option_sort_order"]
+				template.set(@destination_line, @template_column, "7")
+
+				@destination_line = @destination_line + 1
+
 			end	
 			
 			
