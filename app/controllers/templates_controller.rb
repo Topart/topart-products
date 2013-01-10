@@ -1140,6 +1140,9 @@ class TemplatesController < ApplicationController
 
 				@frame_count = @frame_count + 1
 
+				# Scan the category names
+				@category_names = Array.new
+
 				2.upto(retail_framing_stretching_matting.last_row) do |retail_line|
 
 
@@ -1215,7 +1218,40 @@ class TemplatesController < ApplicationController
 					
 
 					# FRAMING: check if the description contains the substring "Frame"
-					if @frame_name.downcase.include?("frame") and !@frame_name.downcase.include?("mat")
+					if @frame_name.downcase.include?("frame") and !@frame_name.downcase.include?("top mat")
+
+						# Scan the category names and add each of them to an array, used to add it only once
+						@retail_column = @retail_framing_stretching_matting_dictionary["Category Name"]
+						@category_name = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}".downcase
+
+						# Check if the category does not belong to the set already
+						if !@category_names.include?(@category_name)
+
+							# Add it to the set
+							@category_names << @category_name
+
+							# Add a corresponding option value only once
+							#_custom_option_row_sku, add the category name with the prefix "category_class"
+							@template_column = @template_dictionary["_custom_option_row_sku"]
+							template.set(@destination_line, @template_column, "frame_category_" + @category_name.to_s)
+
+							#_custom_option_row_title
+							@template_column = @template_dictionary["_custom_option_row_title"]
+							template.set(@destination_line, @template_column, "category " + @category_name.to_s)
+
+							#_custom_option_row_price
+							@template_column = @template_dictionary["_custom_option_row_price"]
+							template.set(@destination_line, @template_column, "0.0")
+
+							#_custom_option_row_sort
+							@template_column = @template_dictionary["_custom_option_row_sort"]
+							template.set(@destination_line, @template_column, @frame_count)
+
+							@destination_line = @destination_line + 1
+
+							@frame_count = @frame_count + 1
+
+						end
 
 						# Each framing option has a different price for each size (UI) available
 
@@ -1226,13 +1262,13 @@ class TemplatesController < ApplicationController
 
 								@frame_price = @ui_paper_array[ui_line].to_f * @frame_ui_price.to_f
 
-								#_custom_option_row_sku
+								#_custom_option_row_sku, add the category name
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "frame_paper_" + @frame_item_number + "_ui_" + @ui_paper_array[ui_line].to_s)
+								template.set(@destination_line, @template_column, "frame_paper_" + @frame_item_number + "_ui_" + @ui_paper_array[ui_line].to_s + "_category_" + @category_name.to_s)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
-								template.set(@destination_line, @template_column, @frame_name + "- ui_" + @ui_paper_array[ui_line].to_s)
+								template.set(@destination_line, @template_column, @frame_name + "- ui_" + @ui_paper_array[ui_line].to_s + "_category_" + @category_name.to_s)
 
 								#_custom_option_row_price
 								@template_column = @template_dictionary["_custom_option_row_price"]
@@ -1258,11 +1294,11 @@ class TemplatesController < ApplicationController
 
 								#_custom_option_row_sku
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "frame_canvas_" + @frame_item_number + "_ui_" + @ui_canvas_array[ui_line].to_s)
+								template.set(@destination_line, @template_column, "frame_canvas_" + @frame_item_number + "_ui_" + @ui_canvas_array[ui_line].to_s + "_category_" + @category_name.to_s)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
-								template.set(@destination_line, @template_column, @frame_name + "- ui_" + @ui_canvas_array[ui_line].to_s)
+								template.set(@destination_line, @template_column, @frame_name + "- ui_" + @ui_canvas_array[ui_line].to_s + "_category_" + @category_name.to_s)
 
 								#_custom_option_row_price
 								@template_column = @template_dictionary["_custom_option_row_price"]
@@ -1345,9 +1381,18 @@ class TemplatesController < ApplicationController
 					@retail_column = @retail_framing_stretching_matting_dictionary["Color Code"]
 					@mats_color = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}"
 
+					@retail_column = @retail_framing_stretching_matting_dictionary["Category Name"]
+					@category_name = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}".downcase
 
 					# MATTING: check if the description contains the substring "Mat"
-					if @mat_name.downcase.include?("mat") and !@mat_name.downcase.include?("frame")
+					if @mat_name.downcase.include?("top mat")
+
+						# Check if the matting option is oversize or not
+						if @category_name == "matscoloros"
+							@oversize_tag = "_oversize"
+						else
+							@oversize_tag = ""
+						end
 
 						# Each framing option has a different price for each size (UI) available
 
@@ -1360,7 +1405,7 @@ class TemplatesController < ApplicationController
 
 								#_custom_option_row_sku
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "mats_paper_" + @mat_item_number + "_ui_" + @ui_paper_array[ui_line].to_s + "_" + @mats_color)
+								template.set(@destination_line, @template_column, "mats_paper_" + @mat_item_number + "_ui_" + @ui_paper_array[ui_line].to_s + "_" + @mats_color + @oversize_tag)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
@@ -1378,35 +1423,6 @@ class TemplatesController < ApplicationController
 
 								@mats_count = @mats_count + 1
 
-							end
-						end
-
-						# Available for Canvas: actually matting is not available for canvas, but we leave this for potential future use
-						if @mats_for_canvas.downcase == "y"
-
-							0.upto(@ui_canvas_array.size - 1) do |ui_line|
-
-								@mat_price = @ui_canvas_array[ui_line].to_f * @mat_ui_price.to_f
-
-								#_custom_option_row_sku
-								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "mats_canvas_" + @mat_item_number + "_ui_" + @ui_canvas_array[ui_line].to_s)
-
-								#_custom_option_row_title
-								@template_column = @template_dictionary["_custom_option_row_title"]
-								template.set(@destination_line, @template_column, @mat_name + "- ui_" + @ui_canvas_array[ui_line].to_s)
-
-								#_custom_option_row_price
-								@template_column = @template_dictionary["_custom_option_row_price"]
-								template.set(@destination_line, @template_column, @mat_price.to_s)
-
-								#_custom_option_row_sort
-								@template_column = @template_dictionary["_custom_option_row_sort"]
-								template.set(@destination_line, @template_column, @mats_count)
-
-								@destination_line = @destination_line + 1
-
-								@mats_count = @mats_count + 1
 							end
 						end
 					end
