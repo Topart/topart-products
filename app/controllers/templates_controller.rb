@@ -1224,35 +1224,6 @@ class TemplatesController < ApplicationController
 						@retail_column = @retail_framing_stretching_matting_dictionary["Category Name"]
 						@category_name = "#{retail_framing_stretching_matting.cell(retail_line, @retail_column)}".downcase
 
-						# Check if the category does not belong to the set already
-						if !@category_names.include?(@category_name)
-
-							# Add it to the set
-							@category_names << @category_name
-
-							# Add a corresponding option value only once
-							#_custom_option_row_sku, add the category name with the prefix "category_class"
-							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "frame_category_" + @category_name.to_s)
-
-							#_custom_option_row_title
-							@template_column = @template_dictionary["_custom_option_row_title"]
-							template.set(@destination_line, @template_column, "category " + @category_name.to_s)
-
-							#_custom_option_row_price
-							@template_column = @template_dictionary["_custom_option_row_price"]
-							template.set(@destination_line, @template_column, "0.0")
-
-							#_custom_option_row_sort
-							@template_column = @template_dictionary["_custom_option_row_sort"]
-							template.set(@destination_line, @template_column, @frame_count)
-
-							@destination_line = @destination_line + 1
-
-							@frame_count = @frame_count + 1
-
-						end
-
 						# Each framing option has a different price for each size (UI) available
 
 						# Available for Paper
