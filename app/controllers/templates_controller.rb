@@ -876,8 +876,8 @@ class TemplatesController < ApplicationController
 
 				@match_index = 0
 
-				@ui_paper_array = Array.new
-				@ui_canvas_array = Array.new
+				#@ui_paper_array = Array.new
+				#@ui_canvas_array = Array.new
 
 				# Master Paper Sheet
 				2.upto(retail_material_size_paper.last_row) do |retail_line|
@@ -913,9 +913,9 @@ class TemplatesController < ApplicationController
 
 
 						# Add each paper ui to the paper ui array
-						if ( @size_paper_ui != 0 )
-							@ui_paper_array << @size_paper_ui
-						end
+						#if ( @size_paper_ui != 0 )
+						#	@ui_paper_array << @size_paper_ui
+						#end
 
 						#_custom_option_row_title
 						@template_column = @template_dictionary["_custom_option_row_title"]
@@ -982,9 +982,9 @@ class TemplatesController < ApplicationController
 						@size_canvas_ui = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}".to_i
 
 						# Add each canvas ui to the canvas ui array
-						if ( @size_canvas_ui != 0 )
-							@ui_canvas_array << @size_canvas_ui
-						end
+						#if ( @size_canvas_ui != 0 )
+						#	@ui_canvas_array << @size_canvas_ui
+						#end
 
 						0.upto(2) do |count|
 
@@ -1185,26 +1185,26 @@ class TemplatesController < ApplicationController
 
 						@stretching_index = 0
 
-						0.upto(@ui_canvas_array.size - 1) do |ui_line|
+						#0.upto(@ui_canvas_array.size - 1) do |ui_line|
 
-							@frame_price = @ui_canvas_array[ui_line].to_f * @frame_ui_price.to_f
+							#@frame_price = @ui_canvas_array[ui_line].to_f * @frame_ui_price.to_f
 
 							#_custom_option_row_title
 							@template_column = @template_dictionary["_custom_option_row_title"]
 							template.set(@destination_line, @template_column, "Stretch it for me")
 							#_custom_option_row_price
 							@template_column = @template_dictionary["_custom_option_row_price"]
-							template.set(@destination_line, @template_column, @frame_price.to_s)
+							template.set(@destination_line, @template_column, @frame_ui_price.to_s)
 							#_custom_option_row_sku
 							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "canvas_stretching_ui_" + @ui_canvas_array[ui_line].to_s)
+							template.set(@destination_line, @template_column, "canvas_stretching")
 							#_custom_option_row_sort
 							@template_column = @template_dictionary["_custom_option_row_sort"]
 							template.set(@destination_line, @template_column, @stretching_index)
 
 							@destination_line = @destination_line + 1
 							@stretching_index = @stretching_index + 1
-						end
+						#end
 
 					end
 
@@ -1229,21 +1229,21 @@ class TemplatesController < ApplicationController
 						# Available for Paper
 						if @frame_for_paper.downcase == "y"
 
-							0.upto(@ui_paper_array.size - 1) do |ui_line|
+							#0.upto(@ui_paper_array.size - 1) do |ui_line|
 
-								@frame_price = @ui_paper_array[ui_line].to_f * @frame_ui_price.to_f
+								#@frame_price = @ui_paper_array[ui_line].to_f * @frame_ui_price.to_f
 
 								#_custom_option_row_sku, add the category name
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "frame_paper_" + @frame_item_number + "_ui_" + @ui_paper_array[ui_line].to_s + "_category_" + @category_name.to_s)
+								template.set(@destination_line, @template_column, "frame_paper_" + @frame_item_number + "_category_" + @category_name.to_s)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
-								template.set(@destination_line, @template_column, @frame_name + "- ui_" + @ui_paper_array[ui_line].to_s + "_category_" + @category_name.to_s)
+								template.set(@destination_line, @template_column, @frame_name + "_category_" + @category_name.to_s)
 
 								#_custom_option_row_price
 								@template_column = @template_dictionary["_custom_option_row_price"]
-								template.set(@destination_line, @template_column, @frame_price.to_s)
+								template.set(@destination_line, @template_column, @frame_ui_price.to_s)
 
 								#_custom_option_row_sort
 								@template_column = @template_dictionary["_custom_option_row_sort"]
@@ -1253,27 +1253,27 @@ class TemplatesController < ApplicationController
 
 								@frame_count = @frame_count + 1
 
-							end
+							#end
 						end
 
 						# Available for Canvas
 						if @frame_for_canvas.downcase == "y"
 
-							0.upto(@ui_canvas_array.size - 1) do |ui_line|
+							#0.upto(@ui_canvas_array.size - 1) do |ui_line|
 
-								@frame_price = @ui_canvas_array[ui_line].to_f * @frame_ui_price.to_f
+								#@frame_price = @ui_canvas_array[ui_line].to_f * @frame_ui_price.to_f
 
 								#_custom_option_row_sku
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "frame_canvas_" + @frame_item_number + "_ui_" + @ui_canvas_array[ui_line].to_s + "_category_" + @category_name.to_s)
+								template.set(@destination_line, @template_column, "frame_canvas_" + @frame_item_number + "_category_" + @category_name.to_s)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
-								template.set(@destination_line, @template_column, @frame_name + "- ui_" + @ui_canvas_array[ui_line].to_s + "_category_" + @category_name.to_s)
+								template.set(@destination_line, @template_column, @frame_name + "_category_" + @category_name.to_s)
 
 								#_custom_option_row_price
 								@template_column = @template_dictionary["_custom_option_row_price"]
-								template.set(@destination_line, @template_column, @frame_price.to_s)
+								template.set(@destination_line, @template_column, @frame_ui_price.to_s)
 
 								#_custom_option_row_sort
 								@template_column = @template_dictionary["_custom_option_row_sort"]
@@ -1282,7 +1282,7 @@ class TemplatesController < ApplicationController
 								@destination_line = @destination_line + 1
 
 								@frame_count = @frame_count + 1
-							end
+							#end
 						end
 
 
@@ -1370,13 +1370,13 @@ class TemplatesController < ApplicationController
 						# Available for Paper
 						if @mats_for_paper.downcase == "y"
 
-							0.upto(@ui_paper_array.size - 1) do |ui_line|
+							#0.upto(@ui_paper_array.size - 1) do |ui_line|
 
-								@mat_price = @ui_paper_array[ui_line].to_f * @mat_ui_price.to_f
+								#@mat_price = @ui_paper_array[ui_line].to_f * @mat_ui_price.to_f
 
 								#_custom_option_row_sku
 								@template_column = @template_dictionary["_custom_option_row_sku"]
-								template.set(@destination_line, @template_column, "mats_paper_" + @mat_item_number + "_ui_" + @ui_paper_array[ui_line].to_s + "_" + @mats_color + @oversize_tag)
+								template.set(@destination_line, @template_column, "mats_paper_" + @mat_item_number + "_" + @mats_color + @oversize_tag)
 
 								#_custom_option_row_title
 								@template_column = @template_dictionary["_custom_option_row_title"]
@@ -1384,7 +1384,7 @@ class TemplatesController < ApplicationController
 
 								#_custom_option_row_price
 								@template_column = @template_dictionary["_custom_option_row_price"]
-								template.set(@destination_line, @template_column, @mat_price.to_s)
+								template.set(@destination_line, @template_column, @mat_ui_price.to_s)
 
 								#_custom_option_row_sort
 								@template_column = @template_dictionary["_custom_option_row_sort"]
@@ -1394,7 +1394,7 @@ class TemplatesController < ApplicationController
 
 								@mats_count = @mats_count + 1
 
-							end
+							#end
 						end
 					end
 				end
