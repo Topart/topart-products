@@ -1052,7 +1052,7 @@ class TemplatesController < ApplicationController
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "3\" white")
+				template.set(@destination_line, @template_column, "3\" White Border")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
 				template.set(@destination_line, @template_column, "0")
@@ -1067,7 +1067,7 @@ class TemplatesController < ApplicationController
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "2\" black 1\" white")
+				template.set(@destination_line, @template_column, "2\" Black Border + 1\" White")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
 				template.set(@destination_line, @template_column, "0")
@@ -1082,7 +1082,7 @@ class TemplatesController < ApplicationController
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
-				template.set(@destination_line, @template_column, "2\" mirrored 1\" white")
+				template.set(@destination_line, @template_column, "2\" Mirrored Border + 1\" White")
 				#_custom_option_row_price
 				@template_column = @template_dictionary["_custom_option_row_price"]
 				template.set(@destination_line, @template_column, "0")
