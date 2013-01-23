@@ -1191,7 +1191,7 @@ class TemplatesController < ApplicationController
 
 							#_custom_option_row_title
 							@template_column = @template_dictionary["_custom_option_row_title"]
-							template.set(@destination_line, @template_column, "Stretch it for me")
+							template.set(@destination_line, @template_column, "1.5\" Gallery Wrap Stretching")
 							#_custom_option_row_price
 							@template_column = @template_dictionary["_custom_option_row_price"]
 							template.set(@destination_line, @template_column, @frame_ui_price.to_s)
@@ -1359,7 +1359,7 @@ class TemplatesController < ApplicationController
 					if @mat_name.downcase.include?("top mat")
 
 						# Check if the matting option is oversize or not
-						if @category_name == "matscoloros"
+						if @category_name == "matscoloros" || @category_name == "matswhiteos" || @category_name == "matsneutralos" || @category_name == "matsblackos"
 							@oversize_tag = "_oversize"
 						else
 							@oversize_tag = ""
