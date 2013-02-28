@@ -9,19 +9,19 @@ class TemplatesController < ApplicationController
  
 		# Load the source Excel file, with all the special products info
 		#source = Excel.new("http://beta.topart.com/csv/Template_2012_11_28/source.xls")
-		source = Excel.new("Template_2012_12_27/source.xls")
+		source = Excel.new("Template_2013_02_07/source.xls")
 		source.default_sheet = source.sheets.first
 		
 		# Load the Magento template, which is in Open Office format
 		#template = Openoffice.new("http://beta.topart.com/csv/Template_2012_11_28/template.ods")
-		template = Openoffice.new("Template_2012_12_27/template.ods")
+		template = Openoffice.new("Template_2013_02_07/template.ods")
 		template.default_sheet = template.sheets.first
 		
 		# Color set
 		@color_set = Array["red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "black/white", "black", "white"]
 
 		# Categories list
-		source_categories = Excel.new("Template_2012_12_27/category list for website.xls")
+		source_categories = Excel.new("Template_2013_02_07/category list for website.xls")
 		source_categories.default_sheet = source_categories.sheets.first
 
 		# Automatically scan the template column names and store them in an associative array
@@ -36,7 +36,7 @@ class TemplatesController < ApplicationController
 
 		# Automatically scan the source column names and store them in an associative array
 		@source_dictionary = Hash.new
-		"A".upto("AW") do |alphabet_character|
+		"A".upto("BC") do |alphabet_character|
 
 			@cell_content = "#{source.cell(1, alphabet_character)}"
 			@source_dictionary[@cell_content] = alphabet_character
@@ -44,15 +44,15 @@ class TemplatesController < ApplicationController
 
 
 		# Load the retail_material_size spreadsheet file for paper
-		retail_material_size_paper = Excel.new("Template_2012_12_27/retail_material_size_treatments.xls")
+		retail_material_size_paper = Excel.new("Template_2013_02_07/retail_material_size_treatments.xls")
 		retail_material_size_paper.default_sheet = retail_material_size_paper.sheets.first
 
 		# Load the retail_material_size spreadsheet file for canvas
-		retail_material_size_canvas = Excel.new("Template_2012_12_27/retail_material_size_treatments.xls")
+		retail_material_size_canvas = Excel.new("Template_2013_02_07/retail_material_size_treatments.xls")
 		retail_material_size_canvas.default_sheet = retail_material_size_canvas.sheets.second
 
 		# Load the retail_framing_stretching_matting spreadsheet file to extract framing, stretching and matting information
-		retail_framing_stretching_matting = Excel.new("Template_2012_12_27/retail_framing_stretching_matting.xls")
+		retail_framing_stretching_matting = Excel.new("Template_2013_02_07/retail_framing_stretching_matting.xls")
 		retail_framing_stretching_matting.default_sheet = retail_framing_stretching_matting.sheets.first
 
 
@@ -83,12 +83,17 @@ class TemplatesController < ApplicationController
 			@retail_framing_stretching_matting_dictionary[@cell_content] = alphabet_character
 		end
 
+		@row_counter = 2;
+		@template_counter = 1;
+
+		while @row_counter <= source.last_row
 
 		# Fill every line in the template file up with
 		# the right value taken from the source input file		
 		@destination_line = 2
 		#2.upto(source.last_row) do |source_line|
-		4679.upto(4679) do |source_line|
+		#4679.upto(4679) do |source_line|
+		@row_counter.upto(source.last_row) do |source_line|
 
 
 			#{}"A".upto("ER") do |alphabet_character|
@@ -537,17 +542,26 @@ class TemplatesController < ApplicationController
 
 			#total_quantity_on_hand
 			@source_column = @source_dictionary["Item Code"]
+			@source_column_2 = @source_dictionary["TotalQuantityOnHand"]
 			@template_column = @template_dictionary["total_quantity_on_hand"]
 			if "#{source.cell(source_line,@source_column)}" =~ /DG$/ 
 				template.set(@destination_line, @template_column, "0".to_i)
 			else
-				@source_column_2 = @source_dictionary["TotalQuantityOnHand"]
-				template.set(@destination_line, @template_column, "#{source.cell(source_line,@source_column_2)}".to_i)
+				template.set(@destination_line, @template_column, "#{source.cell(source_line,@source_column_2)}")
 			end
 
 			#udf_anycustom
-			@source_column = @source_dictionary["udf_anycustom"]
+			@source_column = @source_dictionary["UDF_ANYCUSTOM"]
 			@template_column = @template_dictionary["udf_anycustom"]
+			if "#{source.cell(source_line,@source_column)}" == "Y"
+				template.set(@destination_line, @template_column, "Yes")
+			else
+				template.set(@destination_line, @template_column, "No")
+			end
+
+			#udf_canvas
+			@source_column = @source_dictionary["UDF_CANVAS"]
+			@template_column = @template_dictionary["udf_canvas"]
 			if "#{source.cell(source_line,@source_column)}" == "Y"
 				template.set(@destination_line, @template_column, "Yes")
 			else
@@ -725,18 +739,18 @@ class TemplatesController < ApplicationController
 			@source_column = @source_dictionary["Item Code"]
 			@template_column = @template_dictionary["is_in_stock"]
 			if "#{source.cell(source_line,@source_column)}" =~ /DG$/
-				template.set(@destination_line, @template_column, "1")
-			else
 				template.set(@destination_line, @template_column, "0")
+			else
+				template.set(@destination_line, @template_column, "1")
 			end
 
 			#use_config_notify_stock_qty
 			@source_column = @source_dictionary["Item Code"]
 			@template_column = @template_dictionary["use_config_notify_stock_qty"]
 			if "#{source.cell(source_line,@source_column)}" =~ /DG$/
-				template.set(@destination_line, @template_column, "1")
-			else
 				template.set(@destination_line, @template_column, "0")
+			else
+				template.set(@destination_line, @template_column, "1")
 			end
 
 			#manage_stock
@@ -1457,14 +1471,36 @@ class TemplatesController < ApplicationController
 			# Increase the destination line to the correct number
 			@destination_line = @destination_line + @max_count
 			@destination_line = @destination_line + 1
+
+
+			# If the row counter is multiple of 1500 or we have reached the end of the spreadsheet file, then save the nth output file
+			if @row_counter % 1500 == 0
+
+				# Finally, fill the template
+				@template_file_name = "new_inventory_" + @template_counter.to_s + ".csv"
+				template.to_csv(@template_file_name)
+
+				@template_counter = @template_counter + 1
+				@destination_line = 2
+
+				# Reset the template file to store the new rows
+				template = Openoffice.new("Template_2013_02_07/template.ods")
+				template.default_sheet = template.sheets.first
+			end
+
+			if @row_counter == source.last_row 
+				break
+			end
+
+			@row_counter = @row_counter + 1
+
 		end
 		
-		# Finally, fill the template
-		template.to_csv("new_inventory.csv")
- 
 		# Accessing this view launch the service automatically
 		respond_to do |format|
 			format.html # index.html.erb
+		end
+
 		end
 
 	end
