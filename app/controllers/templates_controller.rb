@@ -1473,7 +1473,7 @@ class TemplatesController < ApplicationController
 			@destination_line = @destination_line + 1
 
 
-			# If the row counter is multiple of 1500 or we have reached the end of the spreadsheet file, then save the nth output file
+			# If the row counter is multiple of 1500, or we have reached the end of the spreadsheet file, then save the nth output file
 			if @row_counter % 1500 == 0
 
 				# Finally, fill the template
