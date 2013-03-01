@@ -1474,7 +1474,7 @@ class TemplatesController < ApplicationController
 
 
 			# If the row counter is multiple of 1500 or we have reached the end of the spreadsheet file, then save the nth output file
-			if @row_counter % 1500 == 0
+			if @row_counter % 1500 == 0 or @row_counter == source.last_row
 
 				# Finally, fill the template
 				@template_file_name = "new_inventory_" + @template_counter.to_s + ".csv"
@@ -1486,10 +1486,6 @@ class TemplatesController < ApplicationController
 				# Reset the template file to store the new rows
 				template = Openoffice.new("Template_2013_02_07/template.ods")
 				template.default_sheet = template.sheets.first
-			end
-
-			if @row_counter == source.last_row 
-				break
 			end
 
 			@row_counter = @row_counter + 1
