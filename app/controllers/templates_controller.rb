@@ -83,30 +83,55 @@ class TemplatesController < ApplicationController
 			@retail_framing_stretching_matting_dictionary[@cell_content] = alphabet_character
 		end
 
-		@row_counter = 2;
-		@template_counter = 1;
+		# Load a hash table with all the item codes from the products spreadsheet. Used to check the presence of DGs and corresponding posters
+		@item_code_hash_table = Hash.new
+
+		2.upto(source.last_row) do |source_line|
+
+			@source_column = @source_dictionary["Item Code"]
+			@item_code = "#{source.cell(source_line, @source_column)}"
+
+			@item_code_hash_table[@item_code] = source_line
+		end
+
+		# We use the following hash table to track DG products that should contain the additional poster size as a custom option
+		@poster_size_hash_table = Hash.new
+
+		@row_counter = 2
+		@template_counter = 1
 
 		while @row_counter <= source.last_row
 
 		# Fill every line in the template file up with
 		# the right value taken from the source input file		
 		@destination_line = 2
-		#2.upto(source.last_row) do |source_line|
-		#4679.upto(4679) do |source_line|
+		
+		#@row_counter.upto(source.last_row) do |source_line|
 		@row_counter.upto(source.last_row) do |source_line|
 
-
-			#{}"A".upto("ER") do |alphabet_character|
-
-				#@source_column = @source_dictionary["#{template.cell(1, alphabet_character)}".downcase.strip]
-				#template.set(@destination_line, alphabet_character, @source_column)
-				
-			#end
-
-		
 			# Sku
 			@template_column = @template_dictionary["sku"]
 			@source_column = @source_dictionary["Item Code"]
+
+			# Check if the current item has both DG and poster availability: if true, 
+			@item_code = "#{source.cell(source_line, @source_column)}"
+			
+			# If the current item is a poster, check if we also have a corresponding DG
+			# If we do, then we continue directly to the DG version and skip the poster size
+			if !@item_code.include?("DG")
+
+				@dg_item_code = @item_code + "DG"
+
+				if @item_code_hash_table[@dg_item_code]
+					
+					# We have the corresponding DG versin: let's go there directly and skip the current loop iteration
+					# We also have to accordingly modify the corresponding DG product by inserting the poster size as a new option value for the size custom option
+					@poster_size_hash_table[@dg_item_code] = "true"
+					@row_counter = @item_code_hash_table[@dg_item_code]
+					next
+				end
+			end
+
 			template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}")
 			
 
@@ -664,15 +689,20 @@ class TemplatesController < ApplicationController
 			minutes = (time/60 - hours * 60)
 
 			ratio_code = hours.to_s << ":" << minutes.to_s
+			ratio_width = hours.to_i
+			ratio_height = minutes.to_i
 			template.set(@destination_line, @template_column, ratio_code)
 
-			#udf_tar
+			#udf_tar: also update the status, to change the product visibility
 			@source_column = @source_dictionary["UDF_TAR"]
-			@template_column = @template_dictionary["udf_tar"]
+			@template_column_tar = @template_dictionary["udf_tar"]
+			@template_column_status = @template_dictionary["status"]
 			if "#{source.cell(source_line,@source_column)}" == "Y"
-				template.set(@destination_line, @template_column, "Yes")
+				template.set(@destination_line, @template_column_tar, "Yes")
+				template.set(@destination_line, @template_column_status, "1")
 			else
-				template.set(@destination_line, @template_column, "No")
+				template.set(@destination_line, @template_column_tar, "No")
+				template.set(@destination_line, @template_column_status, "0")
 			end
 
 			#URL Key, with the SKU as suffix to keep it unique among products
@@ -893,20 +923,86 @@ class TemplatesController < ApplicationController
 				#@ui_paper_array = Array.new
 				#@ui_canvas_array = Array.new
 
+				# The current DG product has a poster size availability, add that as a size option value
+				if @poster_size_hash_table[@item_code] == "true"
+
+					@source_line_poster = @item_code_hash_table[@item_code[0..@item_code.length-3]]
+
+					@size_name = "Poster"
+
+					@source_column = @source_dictionary["SuggestedRetailPrice"]
+					@poster_size_price = "#{source.cell(@source_line_poster, @source_column)}"
+
+					@source_column = @source_dictionary["UDF_PAPER_SIZE_IN"]
+					@paper_size_in = "#{source.cell(@source_line_poster, @source_column)}"
+
+					# Compute the poster UI size
+					@source_column = @source_dictionary["SuggestedRetailPrice"]
+
+					@paper_size_length = @paper_size_in[0,2].to_i
+					@paper_size_width = @paper_size_length * ratio_height / ratio_width
+
+					@poster_size_ui = @paper_size_length + @paper_size_width
+
+					@poster_size = @paper_size_length.to_s + "\"" + "x" + @paper_size_width.to_s + "\""
+
+					#_custom_option_row_title
+					@template_column = @template_dictionary["_custom_option_row_title"]
+					#template.set(@destination_line, @template_column, @size_name)
+					template.set(@destination_line, @template_column, @size_name + ": " + @poster_size)
+
+					#_custom_option_row_price
+					@template_column = @template_dictionary["_custom_option_row_price"]
+					template.set(@destination_line, @template_column, @poster_size_price)
+					#_custom_option_row_sku
+					@template_column = @template_dictionary["_custom_option_row_sku"]
+					template.set(@destination_line, @template_column, "size_paper_" + @size_name.downcase + "_ui_" + @poster_size_ui.to_s)
+					#_custom_option_row_sort
+					@template_column = @template_dictionary["_custom_option_row_sort"]
+					template.set(@destination_line, @template_column, @match_index)
+
+					@destination_line = @destination_line + 1
+
+					@match_index = @match_index + 1
+				end
+
+				@custom_size_ui_to_skip = 0
+				@min_delta = 1000;
+
+				# First pass: scan all the available UI sizes
+				2.upto(retail_material_size_paper.last_row) do |retail_line|
+
+					@retail_column = @retail_material_size_paper_dictionary["Ratio"]
+					@retail_ratio_code = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
+
+					if @source_ratio_code == @retail_ratio_code
+
+						@retail_column = @retail_material_size_paper_dictionary["UI"]
+						@size_paper_ui = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i
+
+						@delta = @poster_size_ui - @size_paper_ui
+						@delta = @delta.abs
+
+						if @delta < @min_delta
+							@custom_size_ui_to_skip = @size_paper_ui
+							@min_delta = @delta
+						end
+					end
+
+				end
+
 				# Master Paper Sheet
 				2.upto(retail_material_size_paper.last_row) do |retail_line|
 
 					@retail_column = @retail_material_size_paper_dictionary["Ratio"]
 					@retail_ratio_code = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
+					@retail_column = @retail_material_size_paper_dictionary["UI"]
+					@size_paper_ui = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i
 
 					# Check for available sizes
-					if @source_ratio_code == @retail_ratio_code
+					if @source_ratio_code == @retail_ratio_code and @size_paper_ui != @custom_size_ui_to_skip
 
-						#p "source ratio code: " + @source_ratio_code
-						#p "retail ratio code: " + @retail_ratio_code
-						#p "______________________"
-						
 						@retail_column = @retail_material_size_paper_dictionary["Ratio"]
 						@retail_ratio_code = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
@@ -916,8 +1012,7 @@ class TemplatesController < ApplicationController
 						@retail_column = @retail_material_size_paper_dictionary["Rolled Photo Paper Retail"]
 						@size_price = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
-						@retail_column = @retail_material_size_paper_dictionary["UI"]
-						@size_paper_ui = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i
+						
 
 						@retail_column = @retail_material_size_paper_dictionary["Length"]
 						@size_paper_length = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i.to_s
@@ -1471,7 +1566,6 @@ class TemplatesController < ApplicationController
 			# Increase the destination line to the correct number
 			@destination_line = @destination_line + @max_count
 			@destination_line = @destination_line + 1
-
 
 			# If the row counter is multiple of 1500 or we have reached the end of the spreadsheet file, then save the nth output file
 			if @row_counter % 1500 == 0 or @row_counter == source.last_row
