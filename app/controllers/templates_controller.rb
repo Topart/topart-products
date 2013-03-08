@@ -26,7 +26,7 @@ class TemplatesController < ApplicationController
 
 		# Automatically scan the template column names and store them in an associative array
 		@template_dictionary = Hash.new
-		"A".upto("ES") do |alphabet_character|
+		"A".upto("ET") do |alphabet_character|
 
 			@cell_content = "#{template.cell(1, alphabet_character)}"
 			@template_dictionary[@cell_content] = alphabet_character
@@ -116,10 +116,12 @@ class TemplatesController < ApplicationController
 
 			# Check if the current item has both DG and poster availability: if true, 
 			@item_code = "#{source.cell(source_line, @source_column)}"
+
+			@source_line_poster = @item_code_hash_table[@item_code[0..@item_code.length-3]]
 			
 			# If the current item is a poster, check if we also have a corresponding DG
 			# If we do, then we continue directly to the DG version and skip the poster size
-			if !@item_code.include?("DG")
+			if @item_code !~ /DG$/
 
 				@dg_item_code = @item_code + "DG"
 
@@ -129,7 +131,8 @@ class TemplatesController < ApplicationController
 					# We have the corresponding DG version: let's go there directly and skip the current loop iteration
 					# We also have to accordingly modify the corresponding DG product by inserting the poster size as a new option value for the size custom option
 					@posters_and_dgs_hash_table[@dg_item_code] = "true"
-					@row_counter = @item_code_hash_table[@dg_item_code]
+					#@row_counter = @item_code_hash_table[@dg_item_code]
+					@row_counter = @row_counter + 1
 					next
 				else
 					@poster_only_hash_table[@item_code] = "true"
@@ -503,7 +506,8 @@ class TemplatesController < ApplicationController
 			#Price
 			@source_column = @source_dictionary["SuggestedRetailPrice"]
 			@template_column = @template_dictionary["price"]
-			template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}")
+			template.set(@destination_line, @template_column, "0.0")
+			#template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}")
 
 
 			#required_options
@@ -592,6 +596,14 @@ class TemplatesController < ApplicationController
 			@source_column = @source_dictionary["UDF_CANVAS"]
 			@template_column = @template_dictionary["udf_canvas"]
 			if "#{source.cell(source_line,@source_column)}" == "Y"
+				template.set(@destination_line, @template_column, "Yes")
+			else
+				template.set(@destination_line, @template_column, "No")
+			end
+
+			#poster_available
+			@template_column = @template_dictionary["poster_available"]
+			if @posters_and_dgs_hash_table[@item_code] == "true" || @poster_only_hash_table[@item_code] == "true"
 				template.set(@destination_line, @template_column, "Yes")
 			else
 				template.set(@destination_line, @template_column, "No")
@@ -932,8 +944,6 @@ class TemplatesController < ApplicationController
 			# The current DG product has a poster size availability, add that as a size option value
 			if @posters_and_dgs_hash_table[@item_code] == "true" || @poster_only_hash_table[@item_code] == "true"
 
-				@source_line_poster = @item_code_hash_table[@item_code[0..@item_code.length-3]]
-
 				if @source_line_poster == nil
 					@source_line_poster = source_line
 				end
@@ -975,6 +985,7 @@ class TemplatesController < ApplicationController
 				@destination_line = @destination_line + 1
 
 				@match_index = @match_index + 1
+
 			end
 
 			# If not available as poster only
