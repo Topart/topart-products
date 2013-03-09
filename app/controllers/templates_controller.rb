@@ -26,7 +26,7 @@ class TemplatesController < ApplicationController
 
 		# Automatically scan the template column names and store them in an associative array
 		@template_dictionary = Hash.new
-		"A".upto("ET") do |alphabet_character|
+		"A".upto("ES") do |alphabet_character|
 
 			@cell_content = "#{template.cell(1, alphabet_character)}"
 			@template_dictionary[@cell_content] = alphabet_character
@@ -381,30 +381,6 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, @template_column, "1")
 
 
-			# Orientation: parse the width and the height, compute a rounded ratio and then the format
-			#@image_size_cm = "#{source.cell(source_line,'M')}"
-			
-			#@width = @page_size_cm.gsub(/ x .[0-9]/, "").to_f
-			#@height = @page_size_cm.gsub(/.[0-9] x /, "").to_f
-			
-			#@ratio = @width / @height
-			#if @ratio > 0.9 && @ratio < 1.1
-			#	template.set(@destination_line, 'AF', "square")
-			#end
-			#if @ratio > 0.4 && @ratio < 0.7
-			#	template.set(@destination_line, 'AF', "portrait")
-			#end
-			#if @ratio > 1.5 && @ratio < 2.1
-			#	template.set(@destination_line, 'AF', "landscape")
-			#end
-			
-			#if @ratio > 0.24 && @ratio < 0.4
-			#	template.set(@destination_line, 'AF', "panel")
-			#end
-			#if @ratio > 2.8 && @ratio < 4.2
-			#	template.set(@destination_line, 'AF', "panorama")
-			#end
-
 			#Orientation: get it directly from it corresponding column
 			@source_column = @source_dictionary["UDF_ORIENTATION"]
 			@template_column = @template_dictionary["format"]
@@ -429,14 +405,6 @@ class TemplatesController < ApplicationController
 			@source_column = @source_dictionary["UDF_IMAGE_SIZE_IN"]
 			@template_column = @template_dictionary["image_size_inches"]
 			template.set(@destination_line, @template_column, "#{source.cell(source_line, @source_column)}")
-
-			#Keywords
-			#@source_column = @source_dictionary["UDF_ATTRIBUTES"]
-			#@template_column = @template_dictionary["keywords"]
-			#@keywords_list = "#{source.cell(source_line, @source_column)}".downcase.split(";").first(20)
-			#template.set(@destination_line, @template_column, @keywords_list.join(";"))
-			#@keywords_list = "#{source.cell(source_line, @source_column)}".downcase
-			#template.set(@destination_line, @template_column, @keywords_list)
 
 
 			#Meta Description
@@ -697,17 +665,18 @@ class TemplatesController < ApplicationController
 			@template_column = @template_dictionary["udf_pricecode"]
 			template.set(@destination_line, @template_column, "#{source.cell(source_line,@source_column)}")
 
-			#udf_ratiocode
-			@source_column = @source_dictionary["UDF_RATIOCODE"]
-			@template_column = @template_dictionary["udf_ratiocode"]
-			time = "#{source.cell(source_line,@source_column)}".to_i
-			hours = time/3600
-			minutes = (time/60 - hours * 60)
+			#udf_ratiodec
+			@source_column = @source_dictionary["UDF_RATIODEC"]
+			@template_column = @template_dictionary["udf_ratiodec"]
+			#time = "#{source.cell(source_line,@source_column)}".to_i
+			#hours = time/3600
+			#minutes = (time/60 - hours * 60)
 
-			ratio_code = hours.to_s << ":" << minutes.to_s
-			ratio_width = hours.to_i
-			ratio_height = minutes.to_i
-			template.set(@destination_line, @template_column, ratio_code)
+			#@ratio_dec = hours.to_s << ":" << minutes.to_s
+			@ratio_dec = "#{source.cell(source_line,@source_column)}".to_f
+			#ratio_width = hours.to_i
+			#ratio_height = minutes.to_i
+			template.set(@destination_line, @template_column, @ratio_dec)
 
 			#udf_tar: also update the status, to change the product visibility
 			@source_column = @source_dictionary["UDF_TAR"]
@@ -929,17 +898,15 @@ class TemplatesController < ApplicationController
 			# 2) check if the ratio matches the one contained in the product attribute 
 			# 3) If the 2 ratios match, then copy the specific retail price option
 			
-			@source_column = @source_dictionary["UDF_RATIOCODE"]
-			time = "#{source.cell(source_line, @source_column)}".to_i
-			hours = time/3600
-			minutes = (time/60 - hours * 60)
+			@source_column = @source_dictionary["UDF_RATIODEC"]
+			#time = "#{source.cell(source_line, @source_column)}".to_i
+			#hours = time/3600
+			#minutes = (time/60 - hours * 60)
 
-			@source_ratio_code = hours.to_s << ":" << minutes.to_s
+			#@source_ratio_dec = hours.to_s << ":" << minutes.to_s
+			@source_ratio_dec = "#{source.cell(source_line, @source_column)}"
 
 			@match_index = 0
-
-			#@ui_paper_array = Array.new
-			#@ui_canvas_array = Array.new
 
 			# The current DG product has a poster size availability, add that as a size option value
 			if @posters_and_dgs_hash_table[@item_code] == "true" || @poster_only_hash_table[@item_code] == "true"
@@ -957,14 +924,11 @@ class TemplatesController < ApplicationController
 				# Compute the poster UI size
 				@source_column = @source_dictionary["UDF_PAPER_SIZE_IN"]
 				@paper_size_in = "#{source.cell(@source_line_poster, @source_column)}"
-				@paper_size_length = @paper_size_in[0,2].to_i
-
-				if ratio_width != 0
-					@paper_size_width = @paper_size_length * ratio_height / ratio_width
-				end
+				
+				@paper_size_width = @paper_size_in[0,2].to_f
+				@paper_size_length = @paper_size_width * @ratio_dec 
 
 				@poster_size_ui = @paper_size_length + @paper_size_width
-
 				@poster_size = @paper_size_length.to_s + "\"" + "x" + @paper_size_width.to_s + "\""
 
 				#_custom_option_row_title
@@ -997,10 +961,10 @@ class TemplatesController < ApplicationController
 				# First pass: scan all the available UI sizes
 				2.upto(retail_material_size_paper.last_row) do |retail_line|
 
-					@retail_column = @retail_material_size_paper_dictionary["Ratio"]
-					@retail_ratio_code = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
+					@retail_column = @retail_material_size_paper_dictionary["Decimal Ratio"]
+					@retail_ratio_dec = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
-					if @source_ratio_code == @retail_ratio_code
+					if @source_ratio_dec == @retail_ratio_dec
 
 						@retail_column = @retail_material_size_paper_dictionary["UI"]
 						@size_paper_ui = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i
@@ -1019,17 +983,17 @@ class TemplatesController < ApplicationController
 				# Master Paper Sheet
 				2.upto(retail_material_size_paper.last_row) do |retail_line|
 
-					@retail_column = @retail_material_size_paper_dictionary["Ratio"]
-					@retail_ratio_code = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
+					@retail_column = @retail_material_size_paper_dictionary["Decimal Ratio"]
+					@retail_ratio_dec = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
 					@retail_column = @retail_material_size_paper_dictionary["UI"]
 					@size_paper_ui = "#{retail_material_size_paper.cell(retail_line, @retail_column)}".to_i
 
 					# Check for available sizes
-					if @source_ratio_code == @retail_ratio_code and @size_paper_ui != @custom_size_ui_to_skip
+					if @source_ratio_dec == @retail_ratio_dec and @size_paper_ui != @custom_size_ui_to_skip
 
-						@retail_column = @retail_material_size_paper_dictionary["Ratio"]
-						@retail_ratio_code = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
+						@retail_column = @retail_material_size_paper_dictionary["Decimal Ratio"]
+						@retail_ratio_dec = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
 						@retail_column = @retail_material_size_paper_dictionary["SIZE DESCRIPTION"]
 						@size_name = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
@@ -1075,17 +1039,13 @@ class TemplatesController < ApplicationController
 				# Master Canvas Sheet
 				2.upto(retail_material_size_canvas.last_row) do |retail_line|
 
-					@retail_column = @retail_material_size_canvas_dictionary["Ratio"]
-					@retail_ratio_code = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"
-						
-						#p "source ratio code: " + @source_ratio_code
-						#p "retail ratio code: " + @retail_ratio_code
-						#p "______________________"
+					@retail_column = @retail_material_size_canvas_dictionary["Decimal Ratio"]
+					@retail_ratio_dec = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"
 					
 					@count = 0
 
 					# Check for available sizes and border treatments prices
-					if @source_ratio_code == @retail_ratio_code
+					if @source_ratio_dec == @retail_ratio_dec
 
 						@retail_column = @retail_material_size_canvas_dictionary["SIZE DESCRIPTION"]
 						@size_name = "#{retail_material_size_canvas.cell(retail_line, @retail_column)}"	
