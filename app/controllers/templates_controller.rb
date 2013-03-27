@@ -52,14 +52,14 @@ class TemplatesController < ApplicationController
 		retail_material_size_canvas.default_sheet = retail_material_size_canvas.sheets.second
 
 		# Load the retail_framing_stretching_matting spreadsheet file to extract framing, stretching and matting information
-		retail_framing_stretching_matting = Excel.new("Template_2013_02_07/retail_framing_stretching_matting.xls")
-		retail_framing_stretching_matting.default_sheet = retail_framing_stretching_matting.sheets.first
+		retail_framing_stretching_matting = Excel.new("Template_2013_02_07/retail_material_size_treatments.xls")
+		retail_framing_stretching_matting.default_sheet = retail_framing_stretching_matting.sheets.fourth
 
 
 		# MATERIAL -> PAPER
 		# Automatically scan the source column names and store them in an associative array
 		@retail_material_size_paper_dictionary = Hash.new
-		"A".upto("S") do |alphabet_character|
+		"A".upto("R") do |alphabet_character|
 
 			@cell_content = "#{retail_material_size_paper.cell(1, alphabet_character)}"
 			@retail_material_size_paper_dictionary[@cell_content] = alphabet_character
@@ -79,7 +79,7 @@ class TemplatesController < ApplicationController
 		@retail_framing_stretching_matting_dictionary = Hash.new
 		"A".upto("P") do |alphabet_character|
 
-			@cell_content = "#{retail_framing_stretching_matting.cell(2, alphabet_character)}"
+			@cell_content = "#{retail_framing_stretching_matting.cell(1, alphabet_character)}"
 			@retail_framing_stretching_matting_dictionary[@cell_content] = alphabet_character
 		end
 
@@ -97,6 +97,8 @@ class TemplatesController < ApplicationController
 		# We use the following hash table to track DG products that should contain the additional poster size as a custom option
 		@posters_and_dgs_hash_table = Hash.new
 		@poster_only_hash_table = Hash.new
+
+		@source_line_poster = 0
 
 		@row_counter = 2
 		@template_counter = 1
@@ -116,8 +118,6 @@ class TemplatesController < ApplicationController
 
 			# Check if the current item has both DG and poster availability: if true, 
 			@item_code = "#{source.cell(source_line, @source_column)}"
-
-			@source_line_poster = @item_code_hash_table[@item_code[0..@item_code.length-3]]
 			
 			# If the current item is a poster, check if we also have a corresponding DG
 			# If we do, then we continue directly to the DG version and skip the poster size
@@ -125,8 +125,14 @@ class TemplatesController < ApplicationController
 
 				@dg_item_code = @item_code + "DG"
 
-				# If the poster has a corresponding DG item available, then integrate the poster size as one of the available sizes
-				if @item_code_hash_table[@dg_item_code]
+				@source_line_poster = @item_code_hash_table[@item_code]
+				@source_line_dg = @item_code_hash_table[@dg_item_code]
+
+				@a4pod_column = @source_dictionary["UDF_A4POD"]
+				@a4pod = "#{source.cell(@source_line_dg, @a4pod_column)}"
+
+				# If the poster has a corresponding DG item available that is also available for print on demand, then integrate the poster size as one of the available sizes
+				if @item_code_hash_table[@dg_item_code] and @a4pod == "Y"
 					
 					# We have the corresponding DG version: let's go there directly and skip the current loop iteration
 					# We also have to accordingly modify the corresponding DG product by inserting the poster size as a new option value for the size custom option
@@ -446,7 +452,8 @@ class TemplatesController < ApplicationController
 			#Oversize
 			@source_column = @source_dictionary["UDF_OVERSIZE"]
 			@template_column = @template_dictionary["over_size"]
-			if "#{source.cell(source_line,@source_column)}" == "Y"
+			@oversize_flag = "#{source.cell(source_line,@source_column)}"
+			if @oversize_flag == "Y"
 				template.set(@destination_line, @template_column, "Yes")
 			else
 				template.set(@destination_line, @template_column, "No")
@@ -465,7 +472,8 @@ class TemplatesController < ApplicationController
 			#A4POD
 			@source_column = @source_dictionary["UDF_A4POD"]
 			@template_column = @template_dictionary["pod"]
-			if "#{source.cell(source_line,@source_column)}" == "Y"
+			@a4pod = "#{source.cell(source_line,@source_column)}"
+			if @a4pod == "Y"
 				template.set(@destination_line, @template_column, "Yes")
 			else
 				template.set(@destination_line, @template_column, "No")
@@ -563,7 +571,8 @@ class TemplatesController < ApplicationController
 			#udf_canvas
 			@source_column = @source_dictionary["UDF_CANVAS"]
 			@template_column = @template_dictionary["udf_canvas"]
-			if "#{source.cell(source_line,@source_column)}" == "Y"
+			@canvas_available = "#{source.cell(source_line,@source_column)}"
+			if @canvas_available == "Y"
 				template.set(@destination_line, @template_column, "Yes")
 			else
 				template.set(@destination_line, @template_column, "No")
@@ -676,7 +685,7 @@ class TemplatesController < ApplicationController
 			@ratio_dec = "#{source.cell(source_line,@source_column)}".to_f
 			#ratio_width = hours.to_i
 			#ratio_height = minutes.to_i
-			template.set(@destination_line, @template_column, @ratio_dec)
+			template.set(@destination_line, @template_column, @ratio_dec.to_s)
 
 			#udf_tar: also update the status, to change the product visibility
 			@source_column = @source_dictionary["UDF_TAR"]
@@ -851,7 +860,7 @@ class TemplatesController < ApplicationController
 			@destination_line = @destination_line + 1
 
 			# If not available as poster only
-			if @poster_only_hash_table[@item_code] != "true"
+			if @poster_only_hash_table[@item_code] != "true" and @canvas_available == "Y"
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
@@ -911,8 +920,10 @@ class TemplatesController < ApplicationController
 			# The current DG product has a poster size availability, add that as a size option value
 			if @posters_and_dgs_hash_table[@item_code] == "true" || @poster_only_hash_table[@item_code] == "true"
 
+				#p @source_line_poster
+
 				if @source_line_poster == nil
-					@source_line_poster = source_line
+					@source_line_poster = source_line - 1
 				end
 
 				@size_name = "Poster"
@@ -928,8 +939,8 @@ class TemplatesController < ApplicationController
 				@paper_size_width = @paper_size_in[0,2].to_f
 				@paper_size_length = @paper_size_width * @ratio_dec 
 
-				@poster_size_ui = @paper_size_length + @paper_size_width
-				@poster_size = @paper_size_length.to_s + "\"" + "x" + @paper_size_width.to_s + "\""
+				@poster_size_ui = @paper_size_width + @paper_size_length
+				@poster_size = @paper_size_width.to_i.to_s + "\"" + "x" + @paper_size_length.to_i.to_s + "\""
 
 				#_custom_option_row_title
 				@template_column = @template_dictionary["_custom_option_row_title"]
@@ -941,7 +952,7 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, @template_column, @poster_size_price)
 				#_custom_option_row_sku
 				@template_column = @template_dictionary["_custom_option_row_sku"]
-				template.set(@destination_line, @template_column, "size_paper_" + @size_name.downcase + "_ui_" + @poster_size_ui.to_s)
+				template.set(@destination_line, @template_column, "size_paper_" + @size_name.downcase + "_ui_" + @poster_size_ui.to_i.to_s + "_width_" + @paper_size_width.to_i.to_s + "_length_" + @paper_size_length.to_i.to_s)
 				#_custom_option_row_sort
 				@template_column = @template_dictionary["_custom_option_row_sort"]
 				template.set(@destination_line, @template_column, @match_index)
@@ -998,6 +1009,11 @@ class TemplatesController < ApplicationController
 						@retail_column = @retail_material_size_paper_dictionary["SIZE DESCRIPTION"]
 						@size_name = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
+						#Skip to the next size option when oversize is not available but met for ratio matching
+						if @oversize_flag == "N" and @size_name.downcase == "oversize"
+							next
+						end
+
 						@retail_column = @retail_material_size_paper_dictionary["Rolled Photo Paper Retail"]
 						@size_price = "#{retail_material_size_paper.cell(retail_line, @retail_column)}"
 
@@ -1015,15 +1031,21 @@ class TemplatesController < ApplicationController
 						#	@ui_paper_array << @size_paper_ui
 						#end
 
+
 						#_custom_option_row_title
 						@template_column = @template_dictionary["_custom_option_row_title"]
-						template.set(@destination_line, @template_column, @size_name + ": " + @size_paper_length + "\""  + "x" + @size_paper_width + "\"")
+						template.set(@destination_line, @template_column, @size_name + ": " + @size_paper_width + "\""  + "x" + @size_paper_length + "\"")
 						#_custom_option_row_price
 						@template_column = @template_dictionary["_custom_option_row_price"]
 						template.set(@destination_line, @template_column, @size_price)
+
+						if @size_name.downcase == "oversize large"
+							@size_name = "Oversize_Large"
+						end
+
 						#_custom_option_row_sku
 						@template_column = @template_dictionary["_custom_option_row_sku"]
-						template.set(@destination_line, @template_column, "size_paper_" + @size_name.downcase + "_ui_" + @size_paper_ui.to_s)
+						template.set(@destination_line, @template_column, "size_paper_" + @size_name.downcase + "_ui_" + @size_paper_ui.to_s + "_width_" + @size_paper_width.to_s + "_length_" + @size_paper_length.to_s)
 						#_custom_option_row_sort
 						@template_column = @template_dictionary["_custom_option_row_sort"]
 						template.set(@destination_line, @template_column, @match_index)
@@ -1084,13 +1106,18 @@ class TemplatesController < ApplicationController
 
 							#_custom_option_row_title
 							@template_column = @template_dictionary["_custom_option_row_title"]
-							template.set(@destination_line, @template_column, @size_name + ": " + @size_canvas_length + "\""  + "x" + @size_canvas_width + "\"")
+							template.set(@destination_line, @template_column, @size_name + ": " + @size_canvas_width + "\""  + "x" + @size_canvas_length + "\"")
 							#_custom_option_row_price
 							@template_column = @template_dictionary["_custom_option_row_price"]
 							template.set(@destination_line, @template_column, @size_prices[count])
+
+							if @size_name.downcase == "oversize large"
+								@size_name = "Oversize_Large"
+							end
+
 							#_custom_option_row_sku
 							@template_column = @template_dictionary["_custom_option_row_sku"]
-							template.set(@destination_line, @template_column, "size_canvas_" + @size_name.downcase + "_treatment_" + (count+1).to_s + "_ui_" + @size_canvas_ui.to_s)
+							template.set(@destination_line, @template_column, "size_canvas_" + @size_name.downcase + "_treatment_" + (count+1).to_s + "_ui_" + @size_canvas_ui.to_s + "_width_" + @size_canvas_width.to_s + "_length_" + @size_canvas_length.to_s)
 							#_custom_option_row_sort
 							@template_column = @template_dictionary["_custom_option_row_sort"]
 							template.set(@destination_line, @template_column, @match_index + count)
