@@ -9,34 +9,32 @@ class TemplatesController < ApplicationController
  
 		# Load the source Excel file, with all the special products info
 		#source = Excel.new("http://beta.topart.com/csv/Template_2012_11_28/source.xls")
-		source = Excel.new("Template_2013_02_07/source.xls")
+		source = Excel.new("Template_2013_04_25/source.xls")
 		source.default_sheet = source.sheets.first
 		
 		# Load the Magento template, which is in Open Office format
 		#template = Openoffice.new("http://beta.topart.com/csv/Template_2012_11_28/template.ods")
-		template = Openoffice.new("Template_2013_02_07/template.ods")
+		template = Openoffice.new("Template_2013_04_25/template.ods")
 		template.default_sheet = template.sheets.first
 		
 		# Color set
 		@color_set = Array["red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "black/white", "black", "white"]
 
 		# Categories list
-		source_categories = Excel.new("Template_2013_02_07/category list for website.xls")
+		source_categories = Excel.new("Template_2013_04_25/category list for website.xls")
 		source_categories.default_sheet = source_categories.sheets.first
 
 		# Automatically scan the template column names and store them in an associative array
 		@template_dictionary = Hash.new
-		"A".upto("ES") do |alphabet_character|
+		"A".upto("FK") do |alphabet_character|
 
 			@cell_content = "#{template.cell(1, alphabet_character)}"
 			@template_dictionary[@cell_content] = alphabet_character
 		end
 
-		#p @template_dictionary["udf_limited"]
-
 		# Automatically scan the source column names and store them in an associative array
 		@source_dictionary = Hash.new
-		"A".upto("BC") do |alphabet_character|
+		"A".upto("BO") do |alphabet_character|
 
 			@cell_content = "#{source.cell(1, alphabet_character)}"
 			@source_dictionary[@cell_content] = alphabet_character
@@ -44,16 +42,16 @@ class TemplatesController < ApplicationController
 
 
 		# Load the retail_material_size spreadsheet file for paper
-		retail_material_size_paper = Excel.new("Template_2013_02_07/retail_material_size_treatments.xls")
-		retail_material_size_paper.default_sheet = retail_material_size_paper.sheets.first
+		retail_material_size_paper = Excel.new("Template_2013_04_25/retail_master.xls")
+		retail_material_size_paper.default_sheet = retail_material_size_paper.sheets[0]
 
 		# Load the retail_material_size spreadsheet file for canvas
-		retail_material_size_canvas = Excel.new("Template_2013_02_07/retail_material_size_treatments.xls")
-		retail_material_size_canvas.default_sheet = retail_material_size_canvas.sheets.second
+		retail_material_size_canvas = Excel.new("Template_2013_04_25/retail_master.xls")
+		retail_material_size_canvas.default_sheet = retail_material_size_canvas.sheets[1]
 
 		# Load the retail_framing_stretching_matting spreadsheet file to extract framing, stretching and matting information
-		retail_framing_stretching_matting = Excel.new("Template_2013_02_07/retail_material_size_treatments.xls")
-		retail_framing_stretching_matting.default_sheet = retail_framing_stretching_matting.sheets.fourth
+		retail_framing_stretching_matting = Excel.new("Template_2013_04_25/retail_master.xls")
+		retail_framing_stretching_matting.default_sheet = retail_framing_stretching_matting.sheets[9]
 
 
 		# MATERIAL -> PAPER
@@ -103,14 +101,16 @@ class TemplatesController < ApplicationController
 		@row_counter = 2
 		@template_counter = 1
 
+		#@written_categories = []
+
 		while @row_counter <= source.last_row
 
 		# Fill every line in the template file up with
 		# the right value taken from the source input file		
 		@destination_line = 2
 		
-		@row_counter.upto(10) do |source_line|
-		#@row_counter.upto(source.last_row) do |source_line|
+		#@row_counter.upto(10) do |source_line|
+		@row_counter.upto(source.last_row) do |source_line|
 
 			# Sku
 			@template_column = @template_dictionary["sku"]
@@ -172,46 +172,106 @@ class TemplatesController < ApplicationController
 			end
 
 			
-			# Check if any keyword matches any category name. 
-			# If there is a match, add the category name to the corresponding product row.
-			2.upto(source_categories.last_row) do |source_categories_line|
-			#3.upto(3) do |source_categories_line|
+			## This categorization procedure is ignored in favor of the new one after it
+					## Check if any keyword matches any category name. 
+					## If there is a match, add the category name to the corresponding product row.
+					#2.upto(source_categories.last_row) do |source_categories_line|
+					##3.upto(3) do |source_categories_line|
 
-			# Discard the "delete" categories
-				if ( "#{source_categories.cell(source_categories_line,'C')}".downcase.strip != "delete" )
+					## Discard the "delete" categories
+						#if ( "#{source_categories.cell(source_categories_line,'C')}".downcase.strip != "delete" )
 
-					@source_column = @source_dictionary["UDF_ATTRIBUTES"]
+							#@source_column = @source_dictionary["UDF_ATTRIBUTES"]
 
-					@source_keywords_string = "#{source.cell(source_line, @source_column)}".downcase
-					@categories_keywords_array = "#{source_categories.cell(source_categories_line,'B')}".downcase.split(",")
-					@category_name = "#{source_categories.cell(source_categories_line,'A')}".strip
+							#@source_keywords_string = "#{source.cell(source_line, @source_column)}".downcase
+							#@categories_keywords_array = "#{source_categories.cell(source_categories_line,'B')}".downcase.split(",")
+							#@category_name = "#{source_categories.cell(source_categories_line,'A')}".strip
 
-					@written_categories = []
+							#@written_categories = []
 
-					# Browse Art
-					0.upto(@categories_keywords_array.size) do |i|
+							## Subjects
+							#0.upto(@categories_keywords_array.size) do |i|
 
-						@string = @categories_keywords_array[i]
-						if ( @string )
+								#@string = @categories_keywords_array[i]
+								#if ( @string )
 
-							@string = @string.strip
-							if ( @source_keywords_string.include?(@string) and !@written_categories.include?(@category_name))
+									#@string = @string.strip
+									#if ( @source_keywords_string.include?(@string) and !@written_categories.include?(@category_name))
 
-								@template_column = @template_dictionary["_category"]
-								template.set(@destination_line + @collections_count, @template_column, "Browse Art/" + @category_name)
+										#@template_column = @template_dictionary["_category"]
+										#template.set(@destination_line + @collections_count, @template_column, "Subjects/" + @category_name)
 
-								@written_categories << @category_name
-								
-								@template_column = @template_dictionary["_root_category"]
-								template.set(@destination_line + @collections_count, @template_column, "Root Category")
+										#@written_categories << @category_name
+										
+										#@template_column = @template_dictionary["_root_category"]
+										#template.set(@destination_line + @collections_count, @template_column, "Root Category")
 
-								@collections_count = @collections_count + 1
+										#@collections_count = @collections_count + 1
 
-							end
-						end
+									#end
+								#end
+							#end
+						#end
+					#end
+
+			# Category structure: categories and subcategories
+			# Example: x(a;b;c).y.z(f).
+			@source_column = @source_dictionary["UDF_PRISUBNSUBCAT"]
+			@category_field = "#{source.cell(source_line,@source_column)}"
+
+			@category_array = @category_field.split(".")
+
+			0.upto(@category_array.size-1) do |i|
+
+				@open_brace_index = @category_array[i].index("(")
+				@close_brace_index = @category_array[i].index(")")
+				
+				# Category name
+				if @open_brace_index != nil
+					@category_name = @category_array[i][0..@open_brace_index-1]
+
+					# Subcategory list
+					@subcategory_array = @category_array[i][@open_brace_index+1..@close_brace_index-1].split(";")
+
+					0.upto(@subcategory_array.size-1) do |j|
+
+						@template_column = @template_dictionary["_category"]
+						template.set(@destination_line + @collections_count, @template_column, "Subjects/" + @category_name + "/" + @subcategory_array[j].capitalize)
+
+						# This if block is only used once to comput the unique list of categories/subcategories
+						#if !@written_categories.include?(@category_name + "/" + @subcategory_array[j].capitalize)
+							#p @category_name + "/" + @subcategory_array[j].capitalize
+							#@written_categories << (@category_name + "/" + @subcategory_array[j].capitalize)
+						#end
+
+						@template_column = @template_dictionary["_root_category"]
+						template.set(@destination_line + @collections_count, @template_column, "Root Category")
+
+						@collections_count = @collections_count + 1
+
 					end
+				else
+
+					@category_name = @category_array[i][0..@category_array[i].length-1]
+
+					@template_column = @template_dictionary["_category"]
+					template.set(@destination_line + @collections_count, @template_column, "Subjects/" + @category_name)
+
+					# This if block is only used once to comput the unique list of categories/subcategories
+					#if !@written_categories.include?(@category_name)
+						#p @category_name
+					#	@written_categories << @category_name
+					#end
+
+					@template_column = @template_dictionary["_root_category"]
+					template.set(@destination_line + @collections_count, @template_column, "Root Category")
+
+					@collections_count = @collections_count + 1
+
 				end
+
 			end
+
 
 
 			### Featured Collections ###
@@ -1514,7 +1574,7 @@ class TemplatesController < ApplicationController
 
 							#_custom_option_row_title
 							@template_column = @template_dictionary["_custom_option_row_title"]
-							template.set(@destination_line, @template_column, @mat_name.truncate(20))
+							template.set(@destination_line, @template_column, @mat_name)
 
 							#_custom_option_row_price
 							@template_column = @template_dictionary["_custom_option_row_price"]
@@ -1592,8 +1652,8 @@ class TemplatesController < ApplicationController
 			@destination_line = @destination_line + 1
 
 			# If the row counter is multiple of 1500 or we have reached the end of the spreadsheet file, then save the nth output file
-			#if @row_counter % 1500 == 0 or @row_counter == source.last_row
-			if @row_counter % 1500 == 0 or @row_counter == 10
+			if @row_counter % 1500 == 0 or @row_counter == source.last_row
+			#if @row_counter % 1500 == 0 or @row_counter == 10
 
 				# Finally, fill the template
 				@template_file_name = "new_inventory_" + @template_counter.to_s + ".csv"
@@ -1603,13 +1663,23 @@ class TemplatesController < ApplicationController
 				@destination_line = 2
 
 				# Reset the template file to store the new rows
-				template = Openoffice.new("Template_2013_02_07/template.ods")
+				template = Openoffice.new("Template_2013_04_25/template.ods")
 				template.default_sheet = template.sheets.first
 			end
 
 			@row_counter = @row_counter + 1
 
+			p @row_counter.to_s + "/" + source.last_row.to_s
+
 		end
+
+		#@written_categories.sort!
+		#@unique_counter = 1
+		#File.open("categories.txt", "w") do |f|
+  			#@written_categories.each do |row| f << @unique_counter << ") " << row << "\n" 
+			#@unique_counter = @unique_counter + 1 
+		#end
+		#end
 		
 		# Accessing this view launch the service automatically
 		respond_to do |format|
