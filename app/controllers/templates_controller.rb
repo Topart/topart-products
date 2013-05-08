@@ -1504,6 +1504,7 @@ class TemplatesController < ApplicationController
 			@template_column = @template_dictionary["_custom_option_sort_order"]
 			template.set(@destination_line, @template_column, "5")
 
+
 			# Add the No Mats option
 			#_custom_option_row_sku
 			@template_column = @template_dictionary["_custom_option_row_sku"]
@@ -1524,6 +1525,7 @@ class TemplatesController < ApplicationController
 			@destination_line = @destination_line + 1
 
 			@mats_count = @mats_count + 1
+
 
 			2.upto(retail_framing_stretching_matting.last_row) do |retail_line|
 
@@ -1593,41 +1595,43 @@ class TemplatesController < ApplicationController
 				end
 			end
 
-			####### CUSTOM SIZE: HEIGHT #########
-			@template_column = @template_dictionary["_custom_option_type"]
-			template.set(@destination_line, @template_column, "field")
-			#_custom_option_title
-			@template_column = @template_dictionary["_custom_option_title"]
-			template.set(@destination_line, @template_column, "Height")
-			#_custom_option_is_required
-			@template_column = @template_dictionary["_custom_option_is_required"]
-			template.set(@destination_line, @template_column, "0")
-			#_custom_option_max_characters
-			@template_column = @template_dictionary["_custom_option_max_characters"]
-			template.set(@destination_line, @template_column, "0")
-			#_custom_option_sort_order
-			@template_column = @template_dictionary["_custom_option_sort_order"]
-			template.set(@destination_line, @template_column, "6")
+			
 
-			@destination_line = @destination_line + 1
+			####### CUSTOM SIZE: HEIGHT #########
+			#@template_column = @template_dictionary["_custom_option_type"]
+			#template.set(@destination_line, @template_column, "field")
+			#_custom_option_title
+			#@template_column = @template_dictionary["_custom_option_title"]
+			#template.set(@destination_line, @template_column, "Height")
+			#_custom_option_is_required
+			#@template_column = @template_dictionary["_custom_option_is_required"]
+			#template.set(@destination_line, @template_column, "0")
+			#_custom_option_max_characters
+			#@template_column = @template_dictionary["_custom_option_max_characters"]
+			#template.set(@destination_line, @template_column, "0")
+			#_custom_option_sort_order
+			#@template_column = @template_dictionary["_custom_option_sort_order"]
+			#template.set(@destination_line, @template_column, "6")
+
+			#@destination_line = @destination_line + 1
 
 			####### CUSTOM SIZE: WIDTH #########
-			@template_column = @template_dictionary["_custom_option_type"]
-			template.set(@destination_line, @template_column, "field")
+			#@template_column = @template_dictionary["_custom_option_type"]
+			#template.set(@destination_line, @template_column, "field")
 			#_custom_option_title
-			@template_column = @template_dictionary["_custom_option_title"]
-			template.set(@destination_line, @template_column, "Width")
+			#@template_column = @template_dictionary["_custom_option_title"]
+			#template.set(@destination_line, @template_column, "Width")
 			#_custom_option_is_required
-			@template_column = @template_dictionary["_custom_option_is_required"]
-			template.set(@destination_line, @template_column, "0")
+			#@template_column = @template_dictionary["_custom_option_is_required"]
+			#template.set(@destination_line, @template_column, "0")
 			#_custom_option_max_characters
-			@template_column = @template_dictionary["_custom_option_max_characters"]
-			template.set(@destination_line, @template_column, "0")
+			#@template_column = @template_dictionary["_custom_option_max_characters"]
+			#template.set(@destination_line, @template_column, "0")
 			#_custom_option_sort_order
-			@template_column = @template_dictionary["_custom_option_sort_order"]
-			template.set(@destination_line, @template_column, "7")
+			#@template_column = @template_dictionary["_custom_option_sort_order"]
+			#template.set(@destination_line, @template_column, "7")
 
-			@destination_line = @destination_line + 1
+			#@destination_line = @destination_line + 1
 	
 			
 			
