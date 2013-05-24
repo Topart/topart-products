@@ -122,7 +122,7 @@ class TemplatesController < ApplicationController
 		# Load a hash table with all the item codes from the products spreadsheet. Used to check the presence of DGs and corresponding posters
 		@item_source_line = Hash.new
 
-		2.upto(10) do |source_line|
+		2.upto(11) do |source_line|
 		#2.upto(source.last_row) do |source_line|
 			@item_code = "#{source.cell(source_line, @source_dictionary["Item Code"])}"
 			@item_source_line[@item_code] = source_line
@@ -138,7 +138,7 @@ class TemplatesController < ApplicationController
 		source_line = 2
 
 		#while source_line <= source.last_row
-		while source_line <= 10
+		while source_line <= 11
 				
 			### Fields variables for each product are all assigned here ###
 
@@ -222,7 +222,7 @@ class TemplatesController < ApplicationController
 			@udf_rag = "#{source.cell(@scan_line, @source_dictionary["UDF_RAG"])}"
 			@udf_photopaper = "#{source.cell(@scan_line, @source_dictionary["UDF_PHOTOPAPER"])}"
 			@udf_poster = "#{source.cell(@scan_line, @source_dictionary["UDF_POSTER"])}"
-
+			
 			@total_quantity_on_hand = "#{source.cell(source_line, @source_dictionary["TotalQuantityOnHand"])}".to_i
 			@udf_decal = "#{source.cell(@scan_line, @source_dictionary["UDF_DECAL"])}"
 			@udf_embellished = "#{source.cell(@scan_line, @source_dictionary["UDF_EMBELLISHED"])}"
@@ -277,6 +277,7 @@ class TemplatesController < ApplicationController
 			@udf_f_m_avail_4_canvas = "#{source.cell(source_line, @source_dictionary["UDF_FMAVAIL4CANVAS"])}"
 			@udf_moulding_width = "#{source.cell(source_line, @source_dictionary["UDF_MOULDINGWIDTH"])}"
 			@udf_ratiocode = "#{source.cell(source_line, @source_dictionary["UDF_RATIOCODE"])}"
+			@udf_marketattrib = "#{source.cell(source_line, @source_dictionary["UDF_MARKETATTRIB"])}"
 
 			
 
@@ -330,8 +331,8 @@ class TemplatesController < ApplicationController
 
 					0.upto(@subcategory_array.size-1) do |j|
 
-						template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name + "/" + @subcategory_array[j].capitalize)
-						template.set(@destination_line + @collections_count, @template_dictionary["_root_category"], "Root Category")
+						#template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name + "/" + @subcategory_array[j].capitalize)
+						#template.set(@destination_line + @collections_count, @template_dictionary["_root_category"], "Root Category")
 
 						@collections_count = @collections_count + 1
 
@@ -340,8 +341,8 @@ class TemplatesController < ApplicationController
 
 					@category_name = @category_array[i][0..@category_array[i].length-1]
 
-					template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name)
-					template.set(@destination_line + @collections_count, @template_dictionary["_root_category"], "Root Category")
+					#template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name)
+					#template.set(@destination_line + @collections_count, @template_dictionary["_root_category"], "Root Category")
 
 					@collections_count = @collections_count + 1
 
@@ -505,18 +506,9 @@ class TemplatesController < ApplicationController
 			end
 
 			#udf_maxsfcm
-			if @udf_maxsfcm == "Y"
-				template.set(@destination_line, @template_dictionary["udf_maxsfcm"], "Yes")
-			else
-				template.set(@destination_line, @template_dictionary["udf_maxsfcm"], "No")
-			end
-
+			template.set(@destination_line, @template_dictionary["udf_maxsfcm"], @udf_maxsfcm)
 			#udf_maxsfin
-			if @udf_maxsfin == "Y"
-				template.set(@destination_line, @template_dictionary["udf_maxsfin"], "Yes")
-			else
-				template.set(@destination_line, @template_dictionary["udf_maxsfin"], "No")
-			end
+			template.set(@destination_line, @template_dictionary["udf_maxsfin"], @udf_maxsfin)
 
 			#udf_largeos
 			if @udf_largeos == "Y"
@@ -969,7 +961,7 @@ class TemplatesController < ApplicationController
 				else
 					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
 				end
-				template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "size_poster" + "_ui_" + @poster_size_ui.to_i.to_s + "_width_" + @image_size_width.to_i.to_s + "_length_" + @image_size_length.to_i.to_s)
+				template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "size_posterpaper" + "_ui_" + @poster_size_ui.to_i.to_s + "_width_" + @image_size_width.to_i.to_s + "_length_" + @image_size_length.to_i.to_s)
 				template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @match_index)
 
 				@destination_line = @destination_line + 1
@@ -1146,10 +1138,10 @@ class TemplatesController < ApplicationController
 					template.set(@destination_line, @template_dictionary["_custom_option_title"], "Borders")
 					template.set(@destination_line, @template_dictionary["_custom_option_is_required"], "1")
 					template.set(@destination_line, @template_dictionary["_custom_option_max_characters"], "0")
-					template.set(@destination_line, @template_dictionary["_custom_option_sort_order"], "1")
+					template.set(@destination_line, @template_dictionary["_custom_option_sort_order"], "2")
 					
 					template.set(@destination_line, @template_dictionary["_custom_option_row_title"], "None")
-					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0")
+					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
 					template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "treatments_none")
 					template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], "0")
 
@@ -1157,7 +1149,7 @@ class TemplatesController < ApplicationController
 					
 
 					template.set(@destination_line, @template_dictionary["_custom_option_row_title"], "3\" White Border")
-					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0")
+					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
 					template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "border_treatment_3_inches_of_white")
 					template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], "1")
 
@@ -1165,14 +1157,14 @@ class TemplatesController < ApplicationController
 
 
 					template.set(@destination_line, @template_dictionary["_custom_option_row_title"], "2\" Black Border + 1\" White")
-					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0") 
+					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0") 
 					template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "border_treatment_2_inches_of_black_and_1_inch_of_white")
 					template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], "2")
 
 					@destination_line = @destination_line + 1
 
 					template.set(@destination_line, @template_dictionary["_custom_option_row_title"], "2\" Mirrored Border + 1\" White")
-					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0")
+					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
 					template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "border_treatment_2_inches_mirrored_and_1_inch_of_white")
 					template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], "3")
 
@@ -1188,6 +1180,8 @@ class TemplatesController < ApplicationController
 
 					if @udf_entity_type == "Stretch"
 
+						@stretch_item_number = @retail_framing_table[i]["Item Code"].downcase
+
 						template.set(@destination_line, @template_dictionary["_custom_option_type"], "checkbox")
 						template.set(@destination_line, @template_dictionary["_custom_option_title"], "Canvas Stretching")
 						template.set(@destination_line, @template_dictionary["_custom_option_is_required"], "0")
@@ -1198,7 +1192,7 @@ class TemplatesController < ApplicationController
 
 						template.set(@destination_line, @template_dictionary["_custom_option_row_title"], "1.5\" Gallery Wrap Stretching")
 						template.set(@destination_line, @template_dictionary["_custom_option_row_price"], @frame_ui_price.to_s) 
-						template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "canvas_stretching")
+						template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], @stretch_item_number)
 						template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @stretching_index)
 
 						@destination_line = @destination_line + 1
@@ -1262,8 +1256,8 @@ class TemplatesController < ApplicationController
 						# Available for Paper
 						if @frame_for_paper == "Y"
 
-							template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "frame_paper_" + @frame_item_number + "_category_" + @category_name.to_s)
-							template.set(@destination_line, @template_dictionary["_custom_option_row_title"], @frame_name + "_category_" + @category_name.to_s)
+							template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], @frame_item_number)
+							template.set(@destination_line, @template_dictionary["_custom_option_row_title"], @frame_name)
 							template.set(@destination_line, @template_dictionary["_custom_option_row_price"], @frame_ui_price.to_s)
 							template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @frame_count)
 
@@ -1275,8 +1269,8 @@ class TemplatesController < ApplicationController
 						# Available for Canvas
 						if @frame_for_canvas == "Y"
 
-							template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "frame_canvas_" + @frame_item_number + "_category_" + @category_name.to_s)
-							template.set(@destination_line, @template_dictionary["_custom_option_row_title"], @frame_name + "_category_" + @category_name.to_s)
+							template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], @frame_item_number)
+							template.set(@destination_line, @template_dictionary["_custom_option_row_title"], @frame_name)
 							template.set(@destination_line, @template_dictionary["_custom_option_row_price"], @frame_ui_price.to_s)
 							template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @frame_count)
 
@@ -1327,17 +1321,10 @@ class TemplatesController < ApplicationController
 						@category_name = @retail_framing_table[i]["UDF_FRAMECAT"].downcase
 
 
-						# Check if the matting option is oversize or not
-						if @category_name == "matscoloros" || @category_name == "matswhiteos" || @category_name == "matsneutralos" || @category_name == "matsblackos"
-							@oversize_tag = "_oversize"
-						else
-							@oversize_tag = ""
-						end
-
 						# Available for Paper
 						if @mats_for_paper == "Y"
 
-							template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "mats_paper_" + @mat_item_number + "_" + @mats_color + @oversize_tag)
+							template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], @mat_item_number)
 							template.set(@destination_line, @template_dictionary["_custom_option_row_title"], @mat_name)
 							template.set(@destination_line, @template_dictionary["_custom_option_row_price"], @mat_ui_price.to_s)
 							template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @mats_count)
@@ -1350,7 +1337,44 @@ class TemplatesController < ApplicationController
 				end
 
 			end
-			########## end of if UDF_FRAMED == Y ####################				
+			########## end of if UDF_FRAMED == Y ####################			
+
+
+			####### CUSTOM SIZE: HEIGHT #########
+			@template_column = @template_dictionary["_custom_option_type"]
+			template.set(@destination_line, @template_column, "field")
+			#_custom_option_title
+			@template_column = @template_dictionary["_custom_option_title"]
+			template.set(@destination_line, @template_column, "Height")
+			#_custom_option_is_required
+			@template_column = @template_dictionary["_custom_option_is_required"]
+			template.set(@destination_line, @template_column, "0")
+			#_custom_option_max_characters
+			@template_column = @template_dictionary["_custom_option_max_characters"]
+			template.set(@destination_line, @template_column, "0")
+			#_custom_option_sort_order
+			@template_column = @template_dictionary["_custom_option_sort_order"]
+			template.set(@destination_line, @template_column, "6")
+
+			@destination_line = @destination_line + 1
+
+			####### CUSTOM SIZE: WIDTH #########
+			@template_column = @template_dictionary["_custom_option_type"]
+			template.set(@destination_line, @template_column, "field")
+			#_custom_option_title
+			@template_column = @template_dictionary["_custom_option_title"]
+			template.set(@destination_line, @template_column, "Width")
+			#_custom_option_is_required
+			@template_column = @template_dictionary["_custom_option_is_required"]
+			template.set(@destination_line, @template_column, "0")
+			#_custom_option_max_characters
+			@template_column = @template_dictionary["_custom_option_max_characters"]
+			template.set(@destination_line, @template_column, "0")
+			#_custom_option_sort_order
+			@template_column = @template_dictionary["_custom_option_sort_order"]
+			template.set(@destination_line, @template_column, "7")
+
+			@destination_line = @destination_line + 1	
 			
 			
 			# Compute the maximum count among all the multi select options
