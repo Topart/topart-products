@@ -245,11 +245,18 @@ class TemplatesController < ApplicationController
 
 			@udf_maxsfcm = "#{source.cell(source_line, @source_dictionary["UDF_MAXSFCM"])}"
 			@udf_maxsfin = "#{source.cell(source_line, @source_dictionary["UDF_MAXSFIN"])}"
+
+			if !@udf_maxsfin.blank?
+				@udf_maxsfin = @udf_maxsfin.to_f
+			end
+
+
 			@udf_attributes = "#{source.cell(source_line, @source_dictionary["UDF_ATTRIBUTES"])}"
 			@udf_ratio_dec = "#{source.cell(source_line, @source_dictionary["UDF_RATIODEC"])}".to_f
+
 			@udf_largeos = "#{source.cell(@scan_line, @source_dictionary["UDF_LARGEOS"])}"
 
-			@suggested_retail_price = "#{source.cell(source_line, @source_dictionary["SuggestedRetailPrice"])}".to_f
+			@suggested_retail_price = "#{source.cell(source_line, @source_dictionary["SuggestedRetailPrice"])}".to_i
 			@udf_eco = "#{source.cell(source_line, @source_dictionary["UDF_ECO"])}"
 			@udf_fmaxslscm = "#{source.cell(source_line, @source_dictionary["UDF_FMAXSLSCM"])}"
 			@udf_fmaxslsin = "#{source.cell(source_line, @source_dictionary["UDF_FMAXSLSIN"])}"
@@ -759,8 +766,8 @@ class TemplatesController < ApplicationController
 			else
 				template.set(@destination_line, @template_dictionary["is_in_stock"], "1")
 				template.set(@destination_line, @template_dictionary["use_config_notify_stock_qty"], "1")
-				template.set(@destination_line, @template_dictionary["manage_stock"], "1")
-				template.set(@destination_line, @template_dictionary["use_config_manage_stock"], "1")
+				template.set(@destination_line, @template_dictionary["manage_stock"], "0")
+				template.set(@destination_line, @template_dictionary["use_config_manage_stock"], "0")
 				template.set(@destination_line, @template_dictionary["qty"], @total_quantity_on_hand)
 				template.set(@destination_line, @template_dictionary["has_options"], "0")
 			end
@@ -1009,10 +1016,20 @@ class TemplatesController < ApplicationController
 						@size_photopaper_ui = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["UI"])}".to_i
 						@image_source = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Image Source"])}"
 
-						# Check for available sizes: the poster size replaces the closes photo paper digital size
-						if @udf_ratio_dec == @retail_ratio_dec and @size_photopaper_ui != @custom_size_ui_to_skip and @udf_imsource == @image_source
+						@image_length = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Length"])}".to_f
+						@image_width = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Width"])}".to_f
 
-							@retail_ratio_dec = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Decimal Ratio"])}"
+						@short_side = 0
+						if @image_length < @image_width
+							@short_side = @image_length
+						else
+							@short_side = @image_width
+						end
+
+						# Check for available sizes: the poster size replaces the closes photo paper digital size
+						if @udf_ratio_dec == @retail_ratio_dec and @size_photopaper_ui != @custom_size_ui_to_skip and @udf_imsource == @image_source and (@udf_maxsfin.blank? or @short_side <= @udf_maxsfin)
+
+							#@retail_ratio_dec = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Decimal Ratio"])}"
 							@size_name = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Size Description"])}"
 
 							@allowed_size = "false"
@@ -1066,11 +1083,20 @@ class TemplatesController < ApplicationController
 
 					@retail_ratio_dec = "#{retail_canvas.cell(i, @retail_canvas_dictionary["Decimal Ratio"])}".to_f
 					@image_source = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Image Source"])}"
+					@image_length = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Length"])}".to_f
+					@image_width = "#{retail_photo_paper.cell(i, @retail_photo_paper_dictionary["Width"])}".to_f
+
+					@short_side = 0
+					if @image_length < @image_width
+						@short_side = @image_length
+					else
+						@short_side = @image_width
+					end
 					
 					@count = 0
 
 					# Check for available sizes and border treatments prices
-					if @udf_ratio_dec == @retail_ratio_dec and @udf_imsource == @image_source
+					if @udf_ratio_dec == @retail_ratio_dec and @udf_imsource == @image_source and (@udf_maxsfin.blank? or @short_side <= @udf_maxsfin)
 
 						@size_name = "#{retail_canvas.cell(i, @retail_canvas_dictionary["Size Description"])}"	
 
@@ -1181,6 +1207,7 @@ class TemplatesController < ApplicationController
 					if @udf_entity_type == "Stretch"
 
 						@stretch_item_number = @retail_framing_table[i]["Item Code"].downcase
+						@stretch_ui_price = @retail_framing_table[i]["United Inch TAR Retail"]
 
 						template.set(@destination_line, @template_dictionary["_custom_option_type"], "checkbox")
 						template.set(@destination_line, @template_dictionary["_custom_option_title"], "Canvas Stretching")
@@ -1191,7 +1218,7 @@ class TemplatesController < ApplicationController
 						@stretching_index = 0
 
 						template.set(@destination_line, @template_dictionary["_custom_option_row_title"], "1.5\" Gallery Wrap Stretching")
-						template.set(@destination_line, @template_dictionary["_custom_option_row_price"], @frame_ui_price.to_s) 
+						template.set(@destination_line, @template_dictionary["_custom_option_row_price"], @stretch_ui_price.to_s) 
 						template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], @stretch_item_number)
 						template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @stretching_index)
 
@@ -1296,14 +1323,6 @@ class TemplatesController < ApplicationController
 				template.set(@destination_line, @template_dictionary["_custom_option_sort_order"], "5")
 
 
-				template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "mats_none")
-				template.set(@destination_line, @template_dictionary["_custom_option_row_title"], "No Mats")
-				template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
-				template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @mats_count)
-
-				@destination_line = @destination_line + 1
-				@mats_count = @mats_count + 1
-
 
 				0.upto(@retail_framing_table.length - 2) do |i|
 
@@ -1335,6 +1354,14 @@ class TemplatesController < ApplicationController
 
 					end
 				end
+
+				template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "mats_none")
+				template.set(@destination_line, @template_dictionary["_custom_option_row_title"], "No Mats")
+				template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
+				template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @mats_count)
+
+				@destination_line = @destination_line + 1
+				@mats_count = @mats_count + 1
 
 			end
 			########## end of if UDF_FRAMED == Y ####################			
