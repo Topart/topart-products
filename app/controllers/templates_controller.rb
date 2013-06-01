@@ -118,6 +118,7 @@ class TemplatesController < ApplicationController
 
 		p "The F21066 items have been correctly loaded."
 
+		@written_categories = []
 
 		# Load a hash table with all the item codes from the products spreadsheet. Used to check the presence of DGs and corresponding posters
 		@item_source_line = Hash.new
@@ -338,8 +339,16 @@ class TemplatesController < ApplicationController
 
 					0.upto(@subcategory_array.size-1) do |j|
 
-						#template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name + "/" + @subcategory_array[j].capitalize)
-						#template.set(@destination_line + @collections_count, @template_dictionary["_root_category"], "Root Category")
+						# This if block is only used once to comput the unique list of categories/subcategories
+						#if !@written_categories.include?(@category_name + "/" + @subcategory_array[j].capitalize)
+						#if !@written_categories.include?(@category_name)
+							#p @category_name + "/" + @subcategory_array[j].capitalize
+							#@written_categories << (@category_name + "/" + @subcategory_array[j].capitalize)
+							@written_categories << (@category_name)
+						#end
+
+						template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name + "/" + @subcategory_array[j].capitalize)
+						template.set(@destination_line + @collections_count, @template_dictionary["_root_category"], "Root Category")
 
 						@collections_count = @collections_count + 1
 
@@ -348,8 +357,14 @@ class TemplatesController < ApplicationController
 
 					@category_name = @category_array[i][0..@category_array[i].length-1]
 
-					#template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name)
-					#template.set(@destination_line + @collections_count, @template_dictionary["_root_category"], "Root Category")
+					# This if block is only used once to comput the unique list of categories/subcategories
+					#if !@written_categories.include?(@category_name)
+						#p @category_name
+						@written_categories << @category_name
+					#end
+
+					template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name)
+					template.set(@destination_line + @collections_count, @template_dictionary["_root_category"], "Root Category")
 
 					@collections_count = @collections_count + 1
 
@@ -1425,6 +1440,7 @@ class TemplatesController < ApplicationController
 
 			# If the row counter is multiple of 1500 or we have reached the end of the spreadsheet file, then save the nth output file
 			if source_line % 1500 == 0 or source_line == 10
+			#if source_line % 1500 == 0 or source_line == source.last_row
 
 				# Finally, fill the template
 				@template_file_name = "new_inventory_" + @template_counter.to_s + ".csv"
@@ -1443,6 +1459,30 @@ class TemplatesController < ApplicationController
 
 		end
 
+
+		# Write the categories to a CSV file for further processing
+		#category_list = Openoffice.new("Template_2013_05_10/category_list.ods")
+		#category_list.default_sheet = category_list.sheets.first
+
+		#@written_categories.sort!
+		#@category_counter = 1	
+  		
+  		#@written_categories.each do |row|
+  		#	category_list.set(@category_counter, "A", "7")
+  		#	category_list.set(@category_counter, "B", row)
+
+		#	@category_counter = @category_counter + 1 
+		#end
+
+		#category_list.to_csv("top_categories.csv")
+
+		#@written_categories.sort!
+		#@unique_counter = 1		
+		#File.open("categories.txt", "w") do |f|
+  		#	@written_categories.each do |row| f << @unique_counter << ") " << row << "\n" 
+		#		@unique_counter = @unique_counter + 1 
+		#	end
+		#end
 
 		# Accessing this view launch the service automatically
 		respond_to do |format|
