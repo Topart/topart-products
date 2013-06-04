@@ -45,12 +45,12 @@ class TemplatesController < ApplicationController
 					0.upto(@subcategory_array.size-1) do |j|
 
 						# This if block is only used once to comput the unique list of categories/subcategories
-						#if !@written_categories.include?(@category_name + "/" + @subcategory_array[j].capitalize)
-						if !@written_categories.include?(@category_name)
+						if !@written_categories.include?(@category_name + "/" + @subcategory_array[j].titleize)
+						#if !@written_categories.include?(@category_name)
 						#if !@written_categories.include?(@subcategory_array[j])
-							#p @category_name + "/" + @subcategory_array[j].capitalize
-							#@written_categories << (@category_name + "/" + @subcategory_array[j].capitalize)
-							@written_categories << (@category_name)
+							#p @category_name + "/" + @subcategory_array[j].titleize
+							@written_categories << (@category_name + "/" + @subcategory_array[j].titleize)
+							#@written_categories << (@category_name)
 							#@written_categories << (@subcategory_array[j])
 
 							#p @category_name + " -" + source_line.to_s
@@ -86,13 +86,27 @@ class TemplatesController < ApplicationController
 		@category_counter = 1	
   		
   		@written_categories.each do |row|
+
+  			top_level_category = ""
+  			second_level_category = ""
+
+  			if row.include?("/")
+  				row_slash_index = row.index("/") + 1
+  				
+  				top_level_category = row[0..row_slash_index-2]
+  				second_level_category = row[row_slash_index..row.length-1]
+  			else
+  				top_level_category = row
+  			end
+
   			category_list.set(@category_counter, "A", "7")
-  			category_list.set(@category_counter, "B", row)
+  			category_list.set(@category_counter, "B", top_level_category)
+  			category_list.set(@category_counter, "C", second_level_category)
 
 			@category_counter = @category_counter + 1 
 		end
 
-		category_list.to_csv("top_level_categories.csv")
+		category_list.to_csv("categories.csv")
 
 
 		#@written_categories.sort!

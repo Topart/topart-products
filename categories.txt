@@ -1,38 +1,236 @@
-1) (People(figurative)
-2) 20th Century Museum Masters
-3) ;Abstract
-4) ;Landscape
-5) Abstract
-6) Achitecture
-7) Animals
-8) Architecture
-9) Botanic
-10) Botanical
-11) Cuisine
-12) Dance
-13) Fashion
-14) Kids
-15) Landscape
-16) Landscape 
-17) Maps & Charts
-18) Maps & charts
-19) Military & War
-20) Music
-21) Need the rest of the new images
-22) Ornamental
-23) People
-24) Person
-25) Places
-26) Pre 20th Century Museum Masters
-27) Pre-20th Century Museum Masters
-28) Season
-29) Seasons
-30) Sports
-31) Sports & Recreation
-32) Still Life
-33) Still life
-34) Transportation
-35) Words & Numbers
-36) World Culture
-37) landscape
-38) military & war
+1) (People(figurative)/People(Figurative
+2) 20th Century Museum Masters/Abstract
+3) 20th Century Museum Masters/Figurative
+4) 20th Century Museum Masters/Military & War
+5) ;Abstract/Landscape
+6) ;Landscape/Beaches
+7) Abstract
+8) Abstract/Figurative
+9) Abstract/Floral
+10) Abstract/Flowers
+11) Abstract/Geometric
+12) Abstract/Irregular
+13) Abstract/Landscape
+14) Abstract/Leaves
+15) Abstract/Palms
+16) Abstract/Still Life
+17) Abstract/Trees
+18) Achitecture/Architectural Elements
+19) Animals
+20) Animals/Antelope
+21) Animals/Bears
+22) Animals/Birds
+23) Animals/Bison
+24) Animals/Bull
+25) Animals/Butterflies
+26) Animals/Cats
+27) Animals/Coral
+28) Animals/Cows
+29) Animals/Crabs
+30) Animals/Deer
+31) Animals/Dinosaurs
+32) Animals/Dogs
+33) Animals/Dogss
+34) Animals/Dolphins
+35) Animals/Dragonflies
+36) Animals/Elk
+37) Animals/Fish
+38) Animals/Fox
+39) Animals/Frogs
+40) Animals/Horses
+41) Animals/Jellyfish
+42) Animals/Leopard
+43) Animals/Lions
+44) Animals/Moose
+45) Animals/Octopus
+46) Animals/Peacock
+47) Animals/Rabbit
+48) Animals/Raccoon
+49) Animals/Reptiles
+50) Animals/Seahorses
+51) Animals/Shells
+52) Animals/Squirrel
+53) Animals/Tigers
+54) Animals/Turtles
+55) Animals/Whale
+56) Animals/Wolf
+57) Architecture/Architectural Elements
+58) Architecture/Bridges
+59) Architecture/Buildings
+60) Architecture/Cityscapes
+61) Architecture/Furniture
+62) Architecture/Interiors
+63) Architecture/Plans
+64) Architecture/Sculptures & Statues
+65) Botanic/Trees
+66) Botanical/Branches
+67) Botanical/Flowers
+68) Botanical/Garden
+69) Botanical/Gardens
+70) Botanical/Leaves
+71) Botanical/Palms
+72) Botanical/Plants
+73) Botanical/Trees
+74) Cuisine/Drinks
+75) Cuisine/Flatware
+76) Cuisine/Food
+77) Cuisine/Fruits & Vegetables
+78) Dance/Ballet
+79) Dance/Ballet Shoes
+80) Dance/Ballroom
+81) Fashion/Men
+82) Fashion/Women
+83) Kids/Animals
+84) Kids/Books
+85) Kids/Dance
+86) Kids/Dinosaurs
+87) Kids/Entertainment
+88) Kids/Shoes
+89) Kids/Sports
+90) Kids/Toys
+91) Landscape /Beaches
+92) Landscape/Abstract
+93) Landscape/Beaches
+94) Landscape/Buildings
+95) Landscape/Caves
+96) Landscape/Cityscapes
+97) Landscape/Coastal
+98) Landscape/Desert
+99) Landscape/Floral
+100) Landscape/Flowers
+101) Landscape/Forest
+102) Landscape/Hills
+103) Landscape/Hillside
+104) Landscape/Lakes
+105) Landscape/Marsh
+106) Landscape/Mountains
+107) Landscape/Ocean
+108) Landscape/Rivers
+109) Landscape/Roads
+110) Landscape/Scenic
+111) Landscape/Tropical
+112) Landscape/Valley
+113) Landscape/Waterfall
+114) Landscape/Waterfalls
+115) Maps & Charts
+116) Maps & Charts/Africa
+117) Maps & Charts/America
+118) Maps & Charts/Asia
+119) Maps & Charts/Celestial
+120) Maps & Charts/Crests
+121) Maps & Charts/Crowns
+122) Maps & Charts/Europe
+123) Maps & Charts/Flags
+124) Maps & Charts/Los Angeles
+125) Maps & Charts/New York City
+126) Maps & Charts/North America
+127) Maps & Charts/Numbers
+128) Maps & Charts/Paris
+129) Maps & Charts/South America
+130) Maps & Charts/Us
+131) Maps & Charts/World
+132) Maps & charts/World
+133) Military & War/Guns
+134) Military & War/Knights
+135) Military & War/Planes
+136) Music
+137) Music/Blues
+138) Music/Classical
+139) Music/Instruments
+140) Music/Jazz
+141) Need the rest of the new images
+142) Ornamental
+143) Ornamental/Symbols
+144) People/Anonymous
+145) People/Famous
+146) People/Figurative
+147) People/Models
+148) People/Nudes
+149) Person/Anonymous
+150) Places/California
+151) Places/Chicago
+152) Places/England
+153) Places/France
+154) Places/Italy
+155) Places/London
+156) Places/Los Angeles
+157) Places/New York City
+158) Places/Paris
+159) Places/Rome
+160) Places/San Francisco
+161) Pre 20th Century Museum Masters/Landscape
+162) Pre-20th Century Museum Masters/Angels
+163) Pre-20th Century Museum Masters/Architectural
+164) Pre-20th Century Museum Masters/Architecture
+165) Pre-20th Century Museum Masters/Cityscapes
+166) Pre-20th Century Museum Masters/Coastal
+167) Pre-20th Century Museum Masters/Figurative
+168) Pre-20th Century Museum Masters/Floral
+169) Pre-20th Century Museum Masters/Flowers
+170) Pre-20th Century Museum Masters/Landscape
+171) Pre-20th Century Museum Masters/Palms
+172) Pre-20th Century Museum Masters/Ponds
+173) Pre-20th Century Museum Masters/Tropical
+174) Season/Spring
+175) Seasons/Fall
+176) Seasons/Spring
+177) Sports & Recreation/Baseball
+178) Sports & Recreation/Chess
+179) Sports & Recreation/Fishing
+180) Sports & Recreation/Golf
+181) Sports & Recreation/Hobbies
+182) Sports & Recreation/Nautical
+183) Sports & Recreation/Polo
+184) Sports & Recreation/Sailing
+185) Sports/Baseball
+186) Sports/Gold
+187) Sports/Ice Skating
+188) Still Life
+189) Still Life/Books
+190) Still Life/Candle Stick
+191) Still Life/Candlestick
+192) Still Life/Clocks
+193) Still Life/Coat Of Arms
+194) Still Life/Crests
+195) Still Life/Crowns
+196) Still Life/Dollars
+197) Still Life/Flatware
+198) Still Life/Shells
+199) Still Life/Shields
+200) Still Life/Trunks
+201) Still Life/Urns
+202) Still Life/Vases
+203) Still life/Baskets
+204) Still life/Crowns
+205) Still life/Flowers
+206) Still life/Plates
+207) Still life/Urns
+208) Still life/Vases
+209) Transportation/Airplanes
+210) Transportation/Boats
+211) Transportation/Buses
+212) Transportation/Cars
+213) Transportation/Motorcycle
+214) Transportation/Motorcycles
+215) Transportation/Planes
+216) Transportation/Sailboats
+217) Transportation/Ships
+218) Transportation/Trains
+219) Words & Numbers
+220) World Culture/Africa
+221) World Culture/African
+222) World Culture/African Cultures
+223) World Culture/America
+224) World Culture/American
+225) World Culture/Asia
+226) World Culture/Asian
+227) World Culture/Asian Culture
+228) World Culture/Asian Cultures
+229) World Culture/Europe
+230) World Culture/European
+231) World Culture/European Culture
+232) World Culture/Religion
+233) World Culture/Us
+234) World Culture/World
+235) landscape/Marsh
+236) military & war/Planes

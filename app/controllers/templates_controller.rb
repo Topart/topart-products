@@ -344,7 +344,7 @@ class TemplatesController < ApplicationController
 						#if !@written_categories.include?(@category_name)
 							#p @category_name + "/" + @subcategory_array[j].capitalize
 							#@written_categories << (@category_name + "/" + @subcategory_array[j].capitalize)
-							@written_categories << (@category_name)
+							#@written_categories << (@category_name)
 						#end
 
 						template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name + "/" + @subcategory_array[j].capitalize)
@@ -360,7 +360,7 @@ class TemplatesController < ApplicationController
 					# This if block is only used once to comput the unique list of categories/subcategories
 					#if !@written_categories.include?(@category_name)
 						#p @category_name
-						@written_categories << @category_name
+						#@written_categories << @category_name
 					#end
 
 					template.set(@destination_line + @collections_count, @template_dictionary["_category"], "Subjects/" + @category_name)
