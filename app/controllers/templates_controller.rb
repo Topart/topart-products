@@ -4,6 +4,102 @@ require 'debugger'
 
 class TemplatesController < ApplicationController
 
+
+	# Example image size = "23 5/8 x 47 1/4"
+	def compute_image_size_width(original_size_value)
+
+		@image_size_width = 0
+
+		@original_image_size_width = original_size_value.slice(0..original_size_value.index("x") - 1)
+
+		if @original_image_size_width.include?('/')
+
+			@width_fraction_numerator = @original_image_size_width.slice(@original_image_size_width.index("/") - 1).to_f
+			@width_fraction_denominator = @original_image_size_width.slice(@original_image_size_width.index("/") + 1).to_f
+			
+			@image_size_width += @width_fraction_numerator/@width_fraction_denominator
+
+		end
+
+		if @original_image_size_width.include?('.')
+			@image_size_width += @original_image_size_width[0,5].to_f
+		else
+			@image_size_width += @original_image_size_width[0,2].to_f
+		end
+
+		return @image_size_width
+
+	end
+
+	# Example image size = "23 5/8 x 47 1/4"
+	def compute_image_size_length(original_size_value)
+
+		@image_size_length = 0
+
+		@original_image_size_length = original_size_value.slice(original_size_value.index("x") + 2..-1)
+
+		if @original_image_size_length.include?('/')
+
+			@length_fraction_numerator = @original_image_size_length.slice(@original_image_size_length.index("/") - 1).to_f
+			@length_fraction_denominator = @original_image_size_length.slice(@original_image_size_length.index("/") + 1).to_f
+			
+			@image_size_length += @length_fraction_numerator/@length_fraction_denominator
+
+		end
+
+		if @original_image_size_length.include?('.')
+			@image_size_length += @original_image_size_length[0,5].to_f
+		else
+			@image_size_length += @original_image_size_length[0,2].to_f
+		end
+
+		return @image_size_length
+
+	end
+
+	def compute_poster_size(a, b)
+
+		return a.to_i.to_s + "\"" + "x" + b.to_i.to_s + "\""
+
+	end
+
+	def compute_poster_size_ui(a, b)
+
+		return (a + b).to_i
+
+	end
+
+	def compute_poster_size_category(x)
+		
+		if (x != 0)
+
+			if (x < 40) 
+				return "Petite"
+			end
+
+			if (x >= 40 and x <  50)
+				return "Small"
+			end
+
+			if (x >= 50 and x < 60)
+				return "Medium"
+			end
+
+			if (x >= 60 and x < 70)
+				return "Large"
+			end
+
+			if (x >= 70)
+				return "Oversize"
+			end
+		
+		end
+
+		return ""
+
+	end
+
+
 	# GET /generate_template
 	# GET /generate_template.json
 	def index
@@ -76,7 +172,7 @@ class TemplatesController < ApplicationController
 			@retail_dictionary[@cell_content] = alphabet_character
 		end
 
-		
+
 		# FRAMING, STRETCHING, MATTING
 		# Automatically scan the source column names and store them in an associative array
 		# Declare and fill the retail framing table
@@ -119,15 +215,18 @@ class TemplatesController < ApplicationController
 		p "The F21066 items have been correctly loaded."
 
 		@written_categories = []
+		@global_alternate_size_array = Array.new
 
 		# Load a hash table with all the item codes from the products spreadsheet. Used to check the presence of DGs and corresponding posters
 		@item_source_line = Hash.new
 
-		2.upto(11) do |source_line|
-		#2.upto(source.last_row) do |source_line|
+		#7000.upto(source.last_row) do |source_line|
+		2.upto(source.last_row) do |source_line|
 			@item_code = "#{source.cell(source_line, @source_dictionary["Item Code"])}"
 			@item_source_line[@item_code] = source_line
 		end
+
+		p "All the source lines have been correctly mapped."
 
 		# We use the following hash table to track DG products that should contain the additional poster size as a custom option
 		@posters_and_dgs_hash_table = Hash.new
@@ -136,10 +235,28 @@ class TemplatesController < ApplicationController
 		@destination_line = 2
 		@template_counter = 1
 
-		source_line = 2
+		source_line = 7633
 
 		#while source_line <= source.last_row
-		while source_line <= 11
+		while source_line <= 7638 + 1
+
+
+			# If the row counter is multiple of 1500 or we have reached the end of the spreadsheet file, then save the nth output file
+			if source_line % 1500 == 0 or source_line == 7638 + 1
+			#if source_line % 1500 == 0 or source_line == source.last_row
+
+				# Finally, fill the template
+				@template_file_name = "new_inventory_" + @template_counter.to_s + ".csv"
+				p "Creating " + @template_file_name + "..."
+				template.to_csv(@template_file_name)
+
+				@template_counter = @template_counter + 1
+				@destination_line = 2
+
+				# Reset the template file to store the new rows
+				template = Openoffice.new("Template_2013_05_10/template.ods")
+				template.default_sheet = template.sheets.first
+			end
 				
 			### Fields variables for each product are all assigned here ###
 
@@ -147,6 +264,8 @@ class TemplatesController < ApplicationController
 
 			# Skip importing items where udf_tar = N
 			if @udf_tar == "N"
+
+				source_line = source_line + 1
 				next
 			end
 
@@ -154,11 +273,30 @@ class TemplatesController < ApplicationController
 
 			# Skip importing the framing related items
 			if @primary_vendor_no == "F21066"
+
+				source_line = source_line + 1
 				next
 			end
 
 			@item_code = "#{source.cell(source_line, @source_dictionary["Item Code"])}"
 			@udf_entity_type = "#{source.cell(source_line, @source_dictionary["UDF_ENTITYTYPE"])}"
+
+			# If the current sku is an alternate size of a sku we have already met, then skip it and go to the next item number
+			if (@global_alternate_size_array.include?(@item_code))
+				
+				p @item_code + " already scanned."
+
+				# Assuming the alternate size DG items are the same as the main item number DG item, we skip them as well
+				# If the next item in the list is the DG item number, then skip it, otherwise analyze it
+				if (@item_source_line[@item_code + "DG"] == (source_line + 1))
+					source_line = source_line + 2
+				else
+					source_line = source_line + 1
+				end
+
+				next
+
+			end
 
 			# We use this variable to keep track of the right line to take data from.
 			@scan_line = 0
@@ -201,10 +339,31 @@ class TemplatesController < ApplicationController
 			@udf_image_size_cm = "#{source.cell(source_line, @source_dictionary["UDF_IMAGE_SIZE_CM"])}"
 			@udf_image_size_in = "#{source.cell(source_line, @source_dictionary["UDF_IMAGE_SIZE_IN"])}"
 
-			@alt_size_1 = "#{source.cell(source_line, @source_dictionary["UDF_ALTS1"])}"
-			@alt_size_2 = "#{source.cell(source_line, @source_dictionary["UDF_ALTS2"])}"
-			@alt_size_3 = "#{source.cell(source_line, @source_dictionary["UDF_ALTS3"])}"
-			@alt_size_4 = "#{source.cell(source_line, @source_dictionary["UDF_ALTS4"])}"
+			@udf_alt_size_1 = "#{source.cell(source_line, @source_dictionary["UDF_ALTS1"])}".gsub(' ','')
+			@udf_alt_size_2 = "#{source.cell(source_line, @source_dictionary["UDF_ALTS2"])}".gsub(' ','')
+			@udf_alt_size_3 = "#{source.cell(source_line, @source_dictionary["UDF_ALTS3"])}".gsub(' ','')
+			@udf_alt_size_4 = "#{source.cell(source_line, @source_dictionary["UDF_ALTS4"])}".gsub(' ','')
+
+
+			# Array containing the alternate sizes, to be used later in the code
+			@alternate_size_array = Array.new
+			if !@udf_alt_size_1.blank?
+				@alternate_size_array << @udf_alt_size_1
+				@global_alternate_size_array << @udf_alt_size_1
+			end
+			if !@udf_alt_size_2.blank?
+				@alternate_size_array << @udf_alt_size_2
+				@global_alternate_size_array << @udf_alt_size_2
+			end
+			if !@udf_alt_size_3.blank?
+				@alternate_size_array << @udf_alt_size_3
+				@global_alternate_size_array << @udf_alt_size_3
+			end
+			if !@udf_alt_size_4.blank?
+				@alternate_size_array << @udf_alt_size_4
+				@global_alternate_size_array << @udf_alt_size_4
+			end
+
 
 			@udf_oversize = "#{source.cell(source_line, @source_dictionary["UDF_OVERSIZE"])}"
 			@udf_serigraph = "#{source.cell(source_line, @source_dictionary["UDF_SERIGRAPH"])}"
@@ -290,13 +449,6 @@ class TemplatesController < ApplicationController
 			
 
 			### End of Fields variables assignments ###
-
-			
-
-			@image_size_width = 0
-			@image_size_length = 0
-
-
 			
 
 
@@ -453,10 +605,10 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, @template_dictionary["_product_websites"], "base")
 			
 			# Alt Size 1, Alt Size 2, Alt Size 3, Alt Size 4
-			template.set(@destination_line, @template_dictionary["alt_size_1"], @alt_size_1)
-			template.set(@destination_line, @template_dictionary["alt_size_2"], @alt_size_2)
-			template.set(@destination_line, @template_dictionary["alt_size_3"], @alt_size_3)
-			template.set(@destination_line, @template_dictionary["alt_size_4"], @alt_size_4)
+			template.set(@destination_line, @template_dictionary["alt_size_1"], @udf_alt_size_1)
+			template.set(@destination_line, @template_dictionary["alt_size_2"], @udf_alt_size_2)
+			template.set(@destination_line, @template_dictionary["alt_size_3"], @udf_alt_size_3)
+			template.set(@destination_line, @template_dictionary["alt_size_4"], @udf_alt_size_4)
 			
 			
 			# ItemCodeDesc
@@ -798,75 +950,18 @@ class TemplatesController < ApplicationController
 			template.set(@destination_line, @template_dictionary["is_decimal_divided"], "0")
 
 
+			
+
 
 			if @udf_entity_type == "Poster" and ( ((@udf_imsource == "San Diego" || @udf_imsource == "Italy") and @total_quantity_on_hand > -1) || @udf_imsource == "Old World")
 
-				# Compute the poster UI size
-				# Example image size = "23 5/8 x 47 1/4"
-				#p @item_code
-				@original_image_size_width = @udf_image_size_in.slice(0..@udf_image_size_in.index("x") - 1)
-				@original_image_size_length = @udf_image_size_in.slice(@udf_image_size_in.index("x") + 2..-1)
+				@image_size_width = compute_image_size_width(@udf_image_size_in)
+				@image_size_length = compute_image_size_length(@udf_image_size_in)
 
-				if @original_image_size_width.include?('/')
+				@poster_size_ui = compute_poster_size_ui(@image_size_width, @image_size_length)
+				@poster_size = compute_poster_size(@image_size_width, @image_size_length)
 
-					@width_fraction_numerator = @original_image_size_width.slice(@original_image_size_width.index("/") - 1).to_f
-					@width_fraction_denominator = @original_image_size_width.slice(@original_image_size_width.index("/") + 1).to_f
-					
-					@image_size_width += @width_fraction_numerator/@width_fraction_denominator
-
-				end
-
-				if @original_image_size_width.include?('.')
-					@image_size_width += @original_image_size_width[0,5].to_f
-				else
-					@image_size_width += @original_image_size_width[0,2].to_f
-				end
-
-
-				if @original_image_size_length.include?('/')
-
-					@length_fraction_numerator = @original_image_size_length.slice(@original_image_size_length.index("/") - 1).to_f
-					@length_fraction_denominator = @original_image_size_length.slice(@original_image_size_length.index("/") + 1).to_f
-					
-					@image_size_length += @length_fraction_numerator/@length_fraction_denominator
-
-				end
-
-				if @original_image_size_length.include?('.')
-					@image_size_length += @original_image_size_length[0,5].to_f
-				else
-					@image_size_length += @original_image_size_length[0,2].to_f
-				end
-
-				@poster_size_ui = (@image_size_width + @image_size_length).to_i
-				@poster_size = @image_size_width.to_i.to_s + "\"" + "x" + @image_size_length.to_i.to_s + "\""
-
-
-				
-				# Size category
-				if (@poster_size_ui != 0)
-
-					if @poster_size_ui < 40 
-						template.set(@destination_line, @template_dictionary["size_category"], "Petite")
-					end
-
-					if @poster_size_ui >= 40 and @poster_size_ui <  50
-						template.set(@destination_line, @template_dictionary["size_category"], "Small")
-					end
-
-					if @poster_size_ui >= 50 and @poster_size_ui < 60 
-						template.set(@destination_line, @template_dictionary["size_category"], "Medium")
-					end
-
-					if @poster_size_ui >= 60 and @poster_size_ui < 70
-						template.set(@destination_line, @template_dictionary["size_category"], "Large")
-					end
-
-					if @poster_size_ui >= 70   
-						template.set(@destination_line, @template_dictionary["size_category"], "Oversize")
-					end
-
-				end
+				template.set(@destination_line, @template_dictionary["size_category"], compute_poster_size_category(@poster_size_ui))
 
 
 				# Embellishments
@@ -977,6 +1072,13 @@ class TemplatesController < ApplicationController
 
 				@size_name = "Poster Paper"
 
+				@image_size_width = compute_image_size_width(@udf_image_size_in)
+				@image_size_length = compute_image_size_length(@udf_image_size_in)
+
+				@poster_size = compute_poster_size(@image_size_width, @image_size_length)
+				@poster_size_ui = compute_poster_size_ui(@image_size_width, @image_size_length)
+
+
 				template.set(@destination_line, @template_dictionary["_custom_option_row_title"], @size_name + ": " + @poster_size)
 				if @suggested_retail_price != 0
 					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], @suggested_retail_price)
@@ -989,6 +1091,45 @@ class TemplatesController < ApplicationController
 				@destination_line = @destination_line + 1
 
 				@match_index = @match_index + 1
+
+
+
+				# Extract the alternate sizes here
+				if !@alternate_size_array.empty?
+
+					for i_th_alt_size in @alternate_size_array
+
+						@alternate_size_line = @item_source_line[i_th_alt_size]
+						@alternate_size = "#{source.cell(@alternate_size_line, @source_dictionary["UDF_IMAGE_SIZE_IN"])}"
+
+						# Alternate size parameters: to be passed later in a dedicated function
+						@size_name = "Poster Paper"
+						
+						@image_size_width = compute_image_size_width(@alternate_size)
+						@image_size_length = compute_image_size_length(@alternate_size)
+
+						@poster_size = compute_poster_size(@image_size_width, @image_size_length)
+						@poster_size_ui = compute_poster_size_ui(@image_size_width, @image_size_length)
+						
+						@suggested_retail_price = "#{source.cell(@alternate_size_line, @source_dictionary["SuggestedRetailPrice"])}".to_i
+
+
+						template.set(@destination_line, @template_dictionary["_custom_option_row_title"], @size_name + ": " + @poster_size)
+						if @suggested_retail_price != 0
+							template.set(@destination_line, @template_dictionary["_custom_option_row_price"], @suggested_retail_price)
+						else
+							template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
+						end
+						template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "size_posterpaper" + "_ui_" + @poster_size_ui.to_i.to_s + "_width_" + @image_size_width.to_i.to_s + "_length_" + @image_size_length.to_i.to_s)
+						template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @match_index)
+
+						@destination_line = @destination_line + 1
+
+						@match_index = @match_index + 1
+
+					end
+
+				end
 
 			end
 
@@ -1040,6 +1181,7 @@ class TemplatesController < ApplicationController
 						else
 							@short_side = @image_width
 						end
+
 
 						# Check for available sizes: the poster size replaces the closes photo paper digital size
 						if @udf_ratio_dec == @retail_ratio_dec and @size_photopaper_ui != @custom_size_ui_to_skip and @udf_imsource == @image_source and (@udf_maxsfin.blank? or @short_side <= @udf_maxsfin)
@@ -1437,23 +1579,6 @@ class TemplatesController < ApplicationController
 			@destination_line = @destination_line + 1
 
 			p source_line.to_s + "/" + source.last_row.to_s
-
-			# If the row counter is multiple of 1500 or we have reached the end of the spreadsheet file, then save the nth output file
-			if source_line % 1500 == 0 or source_line == 10
-			#if source_line % 1500 == 0 or source_line == source.last_row
-
-				# Finally, fill the template
-				@template_file_name = "new_inventory_" + @template_counter.to_s + ".csv"
-				p "Creating " + @template_file_name + "..."
-				template.to_csv(@template_file_name)
-
-				@template_counter = @template_counter + 1
-				@destination_line = 2
-
-				# Reset the template file to store the new rows
-				template = Openoffice.new("Template_2013_05_10/template.ods")
-				template.default_sheet = template.sheets.first
-			end
 
 			source_line = @scan_line + 1
 
