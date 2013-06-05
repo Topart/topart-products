@@ -73,23 +73,23 @@ class TemplatesController < ApplicationController
 		
 		if (x != 0)
 
-			if (x < 40) 
+			if (x < 30) 
 				return "Petite"
 			end
 
-			if (x >= 40 and x <  50)
+			if (x >= 30 and x <  40)
 				return "Small"
 			end
 
-			if (x >= 50 and x < 60)
+			if (x >= 40 and x < 50)
 				return "Medium"
 			end
 
-			if (x >= 60 and x < 70)
+			if (x >= 50 and x < 60)
 				return "Large"
 			end
 
-			if (x >= 70)
+			if (x >= 60)
 				return "Oversize"
 			end
 		
@@ -1085,7 +1085,10 @@ class TemplatesController < ApplicationController
 				else
 					template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
 				end
-				template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "size_posterpaper" + "_ui_" + @poster_size_ui.to_i.to_s + "_width_" + @image_size_width.to_i.to_s + "_length_" + @image_size_length.to_i.to_s)
+
+				@size_category = compute_poster_size_category(@poster_size_ui).downcase
+
+				template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "size_posterpaper_" + @size_category + "_ui_" + @poster_size_ui.to_i.to_s + "_width_" + @image_size_width.to_i.to_s + "_length_" + @image_size_length.to_i.to_s)
 				template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @match_index)
 
 				@destination_line = @destination_line + 1
@@ -1113,6 +1116,7 @@ class TemplatesController < ApplicationController
 						
 						@suggested_retail_price = "#{source.cell(@alternate_size_line, @source_dictionary["SuggestedRetailPrice"])}".to_i
 
+						@size_category = compute_poster_size_category(@poster_size_ui).downcase
 
 						template.set(@destination_line, @template_dictionary["_custom_option_row_title"], @size_name + ": " + @poster_size)
 						if @suggested_retail_price != 0
@@ -1120,7 +1124,7 @@ class TemplatesController < ApplicationController
 						else
 							template.set(@destination_line, @template_dictionary["_custom_option_row_price"], "0.0")
 						end
-						template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "size_posterpaper" + "_ui_" + @poster_size_ui.to_i.to_s + "_width_" + @image_size_width.to_i.to_s + "_length_" + @image_size_length.to_i.to_s)
+						template.set(@destination_line, @template_dictionary["_custom_option_row_sku"], "size_posterpaper_" + @size_category + "_ui_" + @poster_size_ui.to_i.to_s + "_width_" + @image_size_width.to_i.to_s + "_length_" + @image_size_length.to_i.to_s)
 						template.set(@destination_line, @template_dictionary["_custom_option_row_sort"], @match_index)
 
 						@destination_line = @destination_line + 1
