@@ -6,7 +6,8 @@ gem 'rails', '3.2.1'
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
 gem 'roo'
-gem 'debugger'
+#gem 'puma'
+#ruby '1.9.3', :engine => 'jruby', :engine_version => '1.7.4'
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -39,7 +40,13 @@ gem 'jquery-rails'
 
 group :production do
   gem 'pg'
+  #gem 'activerecord-jdbcpostgresql-adapter'
 end
 group :development, :test do
   gem 'sqlite3'
+  #gem 'jdbc-sqlite3'
+end
+
+group :profile do
+  gem 'ruby-prof'
 end
