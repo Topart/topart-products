@@ -240,7 +240,6 @@ class TemplatesController < ApplicationController
 		$posters_and_dgs_hash_table = Hash.new
 		$poster_only_hash_table = Hash.new
 
-		$product_counter = 0
 		$template_counter = 1
 
 		#thread_i = 2
@@ -260,6 +259,8 @@ class TemplatesController < ApplicationController
 		#end
 
 		t1 = Thread.new{parallel_write(2, $source.last_row)}
+		#t1 = Thread.new{parallel_write(2, 10)}
+		#t1 = Thread.new{parallel_write(9020, 9030)}
 		#t1 = Thread.new{parallel_write(2, 51)}
 		#t2 = Thread.new{parallel_write(52, 101)}
 		#t3 = Thread.new{parallel_write(102, 151)}
@@ -294,13 +295,10 @@ class TemplatesController < ApplicationController
 		template = Openoffice.new("Template_2013_05_10/template.ods")
 		template.default_sheet = template.sheets.first
 
-		while source_line <= last_row + 1
-		#while source_line <= 7638 + 1
+		while source_line <= last_row
+
 			#p Thread.list.select {|thread| thread.status == "run"}.count
-
 			#loop_start = Time.now
-
-			$product_counter = $product_counter + 1
 				
 			### Fields variables for each product are all assigned here ###
 			udf_tar = "#{$source.cell(source_line, $source_dictionary["UDF_TAR"])}"
@@ -378,9 +376,9 @@ class TemplatesController < ApplicationController
 			description = "#{$source.cell(source_line, $source_dictionary["Description"])}"
 			special_character_index = description.index("^")
 			if special_character_index != nil
-				p description
+				#p description
 				description = description.gsub("^", "'")
-				p description
+				#p description
 			end
 
 
@@ -1074,7 +1072,7 @@ class TemplatesController < ApplicationController
 			
 			if udf_photopaper == "Y"
 
-				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Paper")
+				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Photo Paper")
 				template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.00")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "material_photopaper")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sort"], "1")
@@ -1634,25 +1632,24 @@ class TemplatesController < ApplicationController
 			destination_line = destination_line + 1
 
 
-
 			p source_line.to_s + "/" + $source.last_row.to_s
 
-			#if source_line % 200 == 0 or source_line == last_row
+			if ( ( source_line % 200 == 0 or ((source_line + 1) % 200 == 0) ) or source_line == last_row )
 
 				# Finally, fill the template
-			#	template_file_name = "csv/new_inventory_" + $template_counter.to_s + ".csv"
-			#	p "Creating " + template_file_name + "..."
-			#	template.to_csv(template_file_name)
+				template_file_name = "csv/new_inventory_" + $template_counter.to_s + ".csv"
+				p "Creating " + template_file_name + "..."
+				template.to_csv(template_file_name)
 
-			#	puts "The running time for the current .csv file has been #{Time.now - $beginning} seconds."
+				puts "The running time for the current .csv file has been #{Time.now - $beginning} seconds."
 
-			#	$template_counter = $template_counter + 1
-			#	destination_line = 2
+				$template_counter = $template_counter + 1
+				destination_line = 2
 
 				# Reset the template file to store the new rows
-			#	template = Openoffice.new("Template_2013_05_10/template.ods")
-			#	template.default_sheet = template.sheets.first
-			#end
+				template = Openoffice.new("Template_2013_05_10/template.ods")
+				template.default_sheet = template.sheets.first
+			end
 
 			source_line = scan_line + 1
 
@@ -1660,14 +1657,14 @@ class TemplatesController < ApplicationController
 			#loop_end = Time.now
 			#loop_time = loop_end - loop_start
 			#p "The loop running time is #{loop_time} seconds."
-			puts "The running time for thread " + Thread.current.object_id.to_s + " has been #{Time.now - current_thread_beginning} seconds."
+			#puts "The running time for thread " + Thread.current.object_id.to_s + " has been #{Time.now - current_thread_beginning} seconds."
 
 		end
 
 		# Finally, fill the template
-		template_file_name = "csv/new_inventory_" + Thread.current.object_id.to_s + ".csv"
-		p "Creating " + template_file_name + "..."
-		template.to_csv(template_file_name)
+		#template_file_name = "csv/new_inventory_" + Thread.current.object_id.to_s + ".csv"
+		#p "Creating " + template_file_name + "..."
+		#template.to_csv(template_file_name)
 
 
 		#result = RubyProf.stop
