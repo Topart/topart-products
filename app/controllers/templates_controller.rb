@@ -259,7 +259,7 @@ class TemplatesController < ApplicationController
 		#end
 
 		t1 = Thread.new{parallel_write(2, $source.last_row)}
-		#t1 = Thread.new{parallel_write(7397, 7399)}
+		#t1 = Thread.new{parallel_write(2, 10)}
 		#t1 = Thread.new{parallel_write(9020, 9030)}
 		#t1 = Thread.new{parallel_write(2, 51)}
 		#t2 = Thread.new{parallel_write(52, 101)}
@@ -431,7 +431,7 @@ class TemplatesController < ApplicationController
 			udf_canvas = "#{$source.cell(scan_line, $source_dictionary["UDF_CANVAS"])}"
 			udf_rag = "#{$source.cell(scan_line, $source_dictionary["UDF_RAG"])}"
 			udf_photopaper = "#{$source.cell(scan_line, $source_dictionary["UDF_PHOTOPAPER"])}"
-			udf_poster = "#{$source.cell(scan_line, $source_dictionary["UDF_POSTER"])}"
+			udf_poster = "#{$source.cell(source_line, $source_dictionary["UDF_POSTER"])}"
 			
 			total_quantity_on_hand = "#{$source.cell(source_line, $source_dictionary["TotalQuantityOnHand"])}".to_i
 			udf_decal = "#{$source.cell(scan_line, $source_dictionary["UDF_DECAL"])}"
@@ -817,9 +817,9 @@ class TemplatesController < ApplicationController
 
 			#udf_photopaper
 			if udf_photopaper == "Y"
-				template.set(destination_line, $template_dictionary["udf_photopaper"], "Yes")
+				template.set(destination_line, $template_dictionary["udf_photo_paper"], "Yes")
 			else
-				template.set(destination_line, $template_dictionary["udf_photopaper"], "No")
+				template.set(destination_line, $template_dictionary["udf_photo_paper"], "No")
 			end
 
 			#udf_poster
@@ -834,12 +834,6 @@ class TemplatesController < ApplicationController
 				template.set(destination_line, $template_dictionary["udf_decal"], "Yes")
 			else
 				template.set(destination_line, $template_dictionary["udf_decal"], "No")
-			end
-
-			if udf_poster == "Y"
-				template.set(destination_line, $template_dictionary["udf_poster"], "Yes")
-			else
-				template.set(destination_line, $template_dictionary["udf_poster"], "No")
 			end
 
 			#Artist name
