@@ -258,6 +258,50 @@ class TemplatesController < ApplicationController
 		#	thread.join
 		#end
 
+		#$global_alternate_size_array << "XWL4870"
+
+		#temp_i = 2
+		#temp_x = 13200
+
+		#while temp_i <= temp_x
+
+		#	item_code = "#{$source.cell(temp_i, $source_dictionary["Item Code"])}"
+
+		#	a = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS1"])}".gsub(' ','')
+		#	b = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS2"])}".gsub(' ','')
+		#	c = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS3"])}".gsub(' ','')
+		#	d = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS4"])}".gsub(' ','')
+			
+		#	if !a.blank?
+		#		
+		#		$global_alternate_size_array << a
+		#	end
+		#	if !b.blank?
+		#	
+		#		$global_alternate_size_array << b
+		#	end
+		#	if !c.blank?
+		#		
+		#		$global_alternate_size_array << c
+		#	end
+		#	if !d.blank?
+		#		
+		#		$global_alternate_size_array << d
+		#	end
+
+			# If the current sku is an alternate size of a sku we have already met, then skip it and go to the next item number
+		#	if ($global_alternate_size_array.include?(item_code))
+		#		
+		#		p item_code + " already scanned."
+
+		#		$global_alternate_size_array << item_code
+		#	end
+
+		#	temp_i = temp_i + 1
+
+		#end
+
+
 		t1 = Thread.new{parallel_write(2, $source.last_row)}
 		#t1 = Thread.new{parallel_write(2, 10)}
 		#t1 = Thread.new{parallel_write(9020, 9030)}
@@ -333,6 +377,25 @@ class TemplatesController < ApplicationController
 					source_line = source_line + 2
 				else
 					source_line = source_line + 1
+				end
+
+				# Check if we need to write to csv file now
+				if ( item_code == "XWL4870" )
+
+					# Finally, fill the template
+					template_file_name = "csv/new_inventory_" + $template_counter.to_s + ".csv"
+					p "Creating " + template_file_name + "..."
+					template.to_csv(template_file_name)
+
+					puts "The running time for the current .csv file has been #{Time.now - $beginning} seconds."
+
+					$template_counter = $template_counter + 1
+					destination_line = 2
+
+					# Reset the template file to store the new rows
+					template = Openoffice.new("Template_2013_05_10/template.ods")
+					template.default_sheet = template.sheets.first
+
 				end
 
 				next
@@ -1628,7 +1691,7 @@ class TemplatesController < ApplicationController
 
 			p source_line.to_s + "/" + $source.last_row.to_s
 
-			if ( ( source_line % 200 == 0 or ((source_line + 1) % 200 == 0) ) or source_line == last_row )
+			if ( ( source_line % 200 == 0 or ((source_line + 1) % 200 == 0) ) or source_line == last_row - 1 )
 
 				# Finally, fill the template
 				template_file_name = "csv/new_inventory_" + $template_counter.to_s + ".csv"
