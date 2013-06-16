@@ -259,7 +259,7 @@ class TemplatesController < ApplicationController
 		#end
 
 		t1 = Thread.new{parallel_write(2, $source.last_row)}
-		#t1 = Thread.new{parallel_write(2, 10)}
+		#t1 = Thread.new{parallel_write(7397, 7399)}
 		#t1 = Thread.new{parallel_write(9020, 9030)}
 		#t1 = Thread.new{parallel_write(2, 51)}
 		#t2 = Thread.new{parallel_write(52, 101)}
@@ -533,7 +533,7 @@ class TemplatesController < ApplicationController
 				
 				# Category name
 				if open_brace_index != nil
-					category_name = category_array[i][0..open_brace_index-1]
+					category_name = category_array[i][0..open_brace_index-1].titleize
 
 					# Subcategory list
 					subcategory_array = category_array[i][open_brace_index+1..close_brace_index-1].split(";")
@@ -548,7 +548,7 @@ class TemplatesController < ApplicationController
 							#written_categories << (category_name)
 						#end
 
-						template.set(destination_line + collections_count, $template_dictionary["_category"], "Subjects/" + category_name + "/" + subcategory_array[j].capitalize)
+						template.set(destination_line + collections_count, $template_dictionary["_category"], "Subjects/" + category_name + "/" + subcategory_array[j].titleize)
 						template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
 
 						collections_count = collections_count + 1
@@ -1173,7 +1173,7 @@ class TemplatesController < ApplicationController
 						else
 							template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.0")
 						end
-						template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "size_posterpaper_" + size_category + "_ui_" + poster_size_ui.to_i.to_s + "_width_" + image_size_width.to_i.to_s + "_length_" + image_size_length.to_i.to_s)
+						template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "size_posterpaper_" + size_category + "_altsize_" + i_th_alt_size.downcase + "_ui_" + poster_size_ui.to_i.to_s + "_width_" + image_size_width.to_i.to_s + "_length_" + image_size_length.to_i.to_s)
 						template.set(destination_line, $template_dictionary["_custom_option_row_sort"], match_index)
 
 						destination_line = destination_line + 1
