@@ -433,8 +433,6 @@ class TemplatesController < ApplicationController
 			end
 
 
-
-			udf_artist_name = "#{$source.cell(source_line, $source_dictionary["UDF_ARTIST_NAME"])}"
 			
 			description = "#{$source.cell(source_line, $source_dictionary["Description"])}"
 			special_character_index = description.index("^")
@@ -558,6 +556,7 @@ class TemplatesController < ApplicationController
 			udf_moulding_width = "#{$source.cell(source_line, $source_dictionary["UDF_MOULDINGWIDTH"])}"
 			udf_ratiocode = "#{$source.cell(source_line, $source_dictionary["UDF_RATIOCODE"])}"
 			udf_marketattrib = "#{$source.cell(source_line, $source_dictionary["UDF_MARKETATTRIB"])}"
+			udf_artist_name = "#{$source.cell(source_line, $source_dictionary["UDF_ARTIST_NAME"])}"
 
 			
 
@@ -571,18 +570,11 @@ class TemplatesController < ApplicationController
 			collections_count = 0
 
 			
-			# Artist Focus: look for artists names
-			udf_artist_name_lower_stripped = udf_artist_name.downcase.strip
-			
-			case udf_artist_name_lower_stripped
-			when "chris donovan", "luke wilson", "erin lange", "gregory williams", "john seba", "mike klung", "alex edwards"
-
-				template.set(destination_line + collections_count, $template_dictionary["_category"], "Artist Focus/" + udf_artist_name)
-				template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
+			template.set(destination_line + collections_count, $template_dictionary["_category"], "Artists/" + udf_artist_name)
+			template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
 				
-				collections_count = collections_count + 1
-
-			end
+			collections_count = collections_count + 1
+			
 
 
 			# Category structure: categories and subcategories
@@ -637,81 +629,20 @@ class TemplatesController < ApplicationController
 			end
 
 
+			# Collections
+			collections_array = udf_marketattrib.split(".")
 
-			### Featured Collections ###
-			# Floral Patterns
-			if udf_attributes.downcase.include? "floral" and udf_attributes.downcase.include? "decorative"
+			0.upto(collections_array.size-1) do |i|
 
-				template.set(destination_line + collections_count, $template_dictionary["_category"], "Collections/Featured Collections/Floral Patterns")
+				collection_name = collections_array[i][0..collections_array[i].length-1]
+
+				template.set(destination_line + collections_count, $template_dictionary["_category"], "Collections/" + collection_name)
 				template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
 
 				collections_count = collections_count + 1
 
 			end
 
-			# Contemporary Trends
-			if udf_attributes.downcase.include? "contemporary trends"
-
-				template.set(destination_line + collections_count, $template_dictionary["_category"], "Collections/Featured Collections/Contemporary Trends")
-				template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
-
-				collections_count = collections_count + 1
-
-			end
-
-			# Sandy Escape
-			if udf_attributes.downcase.include? "beach"
-
-				template.set(destination_line + collections_count, $template_dictionary["_category"], "Collections/Featured Collections/Sandy Escape")
-				template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
-
-				collections_count = collections_count + 1
-
-			end
-
-			### End of Featured Collections ###
-
-
-			# Oversize Variety
-			if ( udf_oversize == "Y")
-
-				template.set(destination_line + collections_count, $template_dictionary["_category"], "Collections/Oversize Variety")
-				template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
-
-				collections_count = collections_count + 1
-
-			end
-
-			# Abstract Geometry
-			if udf_attributes.downcase.include? "abstract" and udf_attributes.downcase.include? "geometric"
-
-				template.set(destination_line + collections_count, $template_dictionary["_category"], "Collections/Abstract Geometry")
-				template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
-
-				collections_count = collections_count + 1
-
-			end
-			
-
-			# Urban Industrial
-			if udf_attributes.downcase.include? "industrial"
-
-				template.set(destination_line + collections_count, $template_dictionary["_category"], "Collections/Urban Industrial")
-				template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
-
-				collections_count = collections_count + 1
-
-			end
-
-			# Gustav Klimt
-			if udf_attributes.downcase.include? "klimt"
-
-				template.set(destination_line + collections_count, $template_dictionary["_category"], "Collections/Gustav Klimt-150th Anniversary")
-				template.set(destination_line + collections_count, $template_dictionary["_root_category"], "Root Category")
-
-				collections_count = collections_count + 1
-
-			end
 
 
 			template.set(destination_line, $template_dictionary["_product_websites"], "base")
