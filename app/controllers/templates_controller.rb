@@ -302,7 +302,7 @@ class TemplatesController < ApplicationController
 		#end
 
 
-		t1 = Thread.new{parallel_write(840, $source.last_row)}
+		t1 = Thread.new{parallel_write(2, $source.last_row)}
 		#t1 = Thread.new{parallel_write(2, 10)}
 		#t1 = Thread.new{parallel_write(9020, 9030)}
 		#t1 = Thread.new{parallel_write(2, 51)}
