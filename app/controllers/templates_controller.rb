@@ -111,8 +111,8 @@ class TemplatesController < ApplicationController
 
  
 		# Load the source Excel file, with all the special products info
-		#source = Excel.new("http://beta.topart.com/csv/Template_2012_11_28/$source.xls")
-		$source = Csv.new("Template_2013_05_10/source.csv")
+		$source = Excel.new("Template_2013_05_10/source.xls")
+		#$source = Csv.new("Template_2013_05_10/source.csv")
 		$source.default_sheet = $source.sheets.first
 		
 		# Load the Magento template, which is in Open Office format
@@ -302,7 +302,7 @@ class TemplatesController < ApplicationController
 		#end
 
 
-		t1 = Thread.new{parallel_write(2, $source.last_row)}
+		t1 = Thread.new{parallel_write(840, $source.last_row)}
 		#t1 = Thread.new{parallel_write(2, 10)}
 		#t1 = Thread.new{parallel_write(9020, 9030)}
 		#t1 = Thread.new{parallel_write(2, 51)}
@@ -449,6 +449,21 @@ class TemplatesController < ApplicationController
 			udf_paper_size_in = "#{$source.cell(source_line, $source_dictionary["UDF_PAPER_SIZE_IN"])}"
 			udf_image_size_cm = "#{$source.cell(source_line, $source_dictionary["UDF_IMAGE_SIZE_CM"])}"
 			udf_image_size_in = "#{$source.cell(source_line, $source_dictionary["UDF_IMAGE_SIZE_IN"])}"
+
+
+			if udf_paper_size_in.blank? and !udf_paper_size_cm.blank?
+				udf_paper_size_in = (compute_image_size_width(udf_paper_size_cm) / 2.54).round(2).to_s + " x " + (compute_image_size_length(udf_paper_size_cm) / 2.54).round(2).to_s
+			end
+
+			if udf_image_size_in.blank?
+
+				if !udf_image_size_cm.blank?
+					udf_image_size_in = (compute_image_size_width(udf_image_size_cm) / 2.54).round(2).to_s + " x " + (compute_image_size_length(udf_image_size_cm) / 2.54).round(2).to_s
+				else
+					udf_image_size_in = udf_paper_size_in
+				end
+			end
+
 
 			udf_alt_size_1 = "#{$source.cell(source_line, $source_dictionary["UDF_ALTS1"])}".gsub(' ','')
 			udf_alt_size_2 = "#{$source.cell(source_line, $source_dictionary["UDF_ALTS2"])}".gsub(' ','')
