@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'roo'
-require 'debugger'
+#require 'debugger'
 
 class TemplatesController < ApplicationController
 
@@ -11,7 +11,7 @@ class TemplatesController < ApplicationController
  
 		# Load the source Excel file, with all the special products info
 		#source = Excel.new("http://beta.topart.com/csv/Template_2012_11_28/source.xls")
-		source = Csv.new("Template_2013_05_10/source.csv")
+		source = Excel.new("Template_2013_05_10/source.xls")
 		source.default_sheet = source.sheets.first
 			
 		
@@ -23,7 +23,7 @@ class TemplatesController < ApplicationController
 		#while source_line <= 31
 				
 			
-			@udf_prisubnsubcat = "#{source.cell(source_line, "BF")}"
+			@udf_prisubnsubcat = "#{source.cell(source_line, "BU")}"
 			
 
 			# Category structure: categories and subcategories
@@ -99,7 +99,7 @@ class TemplatesController < ApplicationController
   				top_level_category = row
   			end
 
-  			category_list.set(@category_counter, "A", "351")
+  			category_list.set(@category_counter, "A", "9")
   			category_list.set(@category_counter, "B", top_level_category)
   			category_list.set(@category_counter, "C", second_level_category)
 

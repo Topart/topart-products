@@ -445,10 +445,10 @@ class TemplatesController < ApplicationController
 
 			udf_pricecode = "#{$source.cell(source_line, $source_dictionary["UDF_PRICECODE"])}"
 
-			udf_paper_size_cm = "#{$source.cell(source_line, $source_dictionary["UDF_PAPER_SIZE_CM"])}"
-			udf_paper_size_in = "#{$source.cell(source_line, $source_dictionary["UDF_PAPER_SIZE_IN"])}"
-			udf_image_size_cm = "#{$source.cell(source_line, $source_dictionary["UDF_IMAGE_SIZE_CM"])}"
-			udf_image_size_in = "#{$source.cell(source_line, $source_dictionary["UDF_IMAGE_SIZE_IN"])}"
+			udf_paper_size_cm = "#{$source.cell(source_line, $source_dictionary["UDF_PAPER_SIZE_CM"])}".downcase
+			udf_paper_size_in = "#{$source.cell(source_line, $source_dictionary["UDF_PAPER_SIZE_IN"])}".downcase
+			udf_image_size_cm = "#{$source.cell(source_line, $source_dictionary["UDF_IMAGE_SIZE_CM"])}".downcase
+			udf_image_size_in = "#{$source.cell(source_line, $source_dictionary["UDF_IMAGE_SIZE_IN"])}".downcase
 
 
 			if udf_paper_size_in.blank? and !udf_paper_size_cm.blank?
@@ -659,6 +659,17 @@ class TemplatesController < ApplicationController
 			end
 
 
+			# Rooms
+			rooms_array = udf_rooms.split(".")
+
+			0.upto(rooms_array.size-1) do |i|
+
+				room_name = rooms_array[i][0..rooms_array[i].length-1]
+				template.set(destination_line + i, $template_dictionary["udf_rooms"], room_name)
+
+			end
+
+
 
 			template.set(destination_line, $template_dictionary["_product_websites"], "base")
 			
@@ -767,7 +778,7 @@ class TemplatesController < ApplicationController
 			template.set(destination_line, $template_dictionary["udf_framecat"], udf_framecat)
 			template.set(destination_line, $template_dictionary["udf_pricolor"], udf_pricolor)
 			template.set(destination_line, $template_dictionary["udf_pristyle"], udf_pristyle)
-			template.set(destination_line, $template_dictionary["udf_rooms"], udf_rooms)
+			#template.set(destination_line, $template_dictionary["udf_rooms"], udf_rooms)
 
 
 			template.set(destination_line, $template_dictionary["udf_artshopi"], udf_artshopi)
@@ -1614,7 +1625,7 @@ class TemplatesController < ApplicationController
 			template_column = $template_dictionary["_custom_option_sort_order"]
 			template.set(destination_line, template_column, "7")
 
-			destination_line = destination_line + 1	
+			destination_line = destination_line + 1
 			
 			
 			# Compute the maximum count among all the multi select options
@@ -1637,7 +1648,7 @@ class TemplatesController < ApplicationController
 
 			p source_line.to_s + "/" + $source.last_row.to_s
 
-			if ( ( source_line % 200 == 0 or ((source_line + 1) % 200 == 0) ) or source_line == last_row - 1 )
+			if ( ( source_line % 800 == 0 or ((source_line + 1) % 800 == 0) ) or source_line == last_row - 1 )
 
 				# Finally, fill the template
 				template_file_name = "csv/new_inventory_" + $template_counter.to_s + ".csv"
