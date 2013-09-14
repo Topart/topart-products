@@ -260,47 +260,53 @@ class TemplatesController < ApplicationController
 
 		#$global_alternate_size_array << "XWL4870"
 
-		#temp_i = 2
-		#temp_x = 13200
 
-		#while temp_i <= temp_x
+		def pre_process_alternate_sizes(start, finish)
 
-		#	item_code = "#{$source.cell(temp_i, $source_dictionary["Item Code"])}"
+			temp_i = start
+			temp_x = finish
 
-		#	a = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS1"])}".gsub(' ','')
-		#	b = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS2"])}".gsub(' ','')
-		#	c = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS3"])}".gsub(' ','')
-		#	d = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS4"])}".gsub(' ','')
-			
-		#	if !a.blank?
-		#		
-		#		$global_alternate_size_array << a
-		#	end
-		#	if !b.blank?
-		#	
-		#		$global_alternate_size_array << b
-		#	end
-		#	if !c.blank?
-		#		
-		#		$global_alternate_size_array << c
-		#	end
-		#	if !d.blank?
-		#		
-		#		$global_alternate_size_array << d
-		#	end
+			while temp_i <= temp_x
 
-			# If the current sku is an alternate size of a sku we have already met, then skip it and go to the next item number
-		#	if ($global_alternate_size_array.include?(item_code))
-		#		
-		#		p item_code + " already scanned."
+				item_code = "#{$source.cell(temp_i, $source_dictionary["Item Code"])}"
 
-		#		$global_alternate_size_array << item_code
-		#	end
+				a = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS1"])}".gsub(' ','')
+				b = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS2"])}".gsub(' ','')
+				c = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS3"])}".gsub(' ','')
+				d = "#{$source.cell(temp_i, $source_dictionary["UDF_ALTS4"])}".gsub(' ','')
+				
+				if !a.blank?
+					
+					$global_alternate_size_array << a
+				end
+				if !b.blank?
+				
+					$global_alternate_size_array << b
+				end
+				if !c.blank?
+					
+					$global_alternate_size_array << c
+				end
+				if !d.blank?
+					
+					$global_alternate_size_array << d
+				end
 
-		#	temp_i = temp_i + 1
+				# If the current sku is an alternate size of a sku we have already met, then skip it and go to the next item number
+				if ($global_alternate_size_array.include?(item_code))
+					
+					p item_code + " already scanned."
 
-		#end
+					$global_alternate_size_array << item_code
+				end
 
+				temp_i = temp_i + 1
+
+			end
+		end
+
+
+		#pre_process_alternate_sizes(2, 12800)
 
 		t1 = Thread.new{parallel_write(2, $source.last_row)}
 		#t1 = Thread.new{parallel_write(2, 10)}
@@ -458,8 +464,10 @@ class TemplatesController < ApplicationController
 			if udf_image_size_in.blank?
 
 				if !udf_image_size_cm.blank?
+					
 					udf_image_size_in = (compute_image_size_width(udf_image_size_cm) / 2.54).round(2).to_s + " x " + (compute_image_size_length(udf_image_size_cm) / 2.54).round(2).to_s
 				else
+					
 					udf_image_size_in = udf_paper_size_in
 				end
 			end
@@ -749,9 +757,9 @@ class TemplatesController < ApplicationController
 			end
 
 			#udf_maxsfcm
-			template.set(destination_line, $template_dictionary["udf_maxsfcm"], udf_maxsfcm)
+			template.set(destination_line, $template_dictionary["udf_maxsfcm"], udf_maxsfcm.to_s)
 			#udf_maxsfin
-			template.set(destination_line, $template_dictionary["udf_maxsfin"], udf_maxsfin)
+			template.set(destination_line, $template_dictionary["udf_maxsfin"], udf_maxsfin.to_s)
 
 			#udf_largeos
 			if udf_largeos == "Y"
@@ -1073,7 +1081,7 @@ class TemplatesController < ApplicationController
 			# Each material option is displayed according to the corresponding udf values
 			if udf_entity_type == "Poster" and ( ((udf_imsource == "San Diego" || udf_imsource == "Italy") and total_quantity_on_hand > -1) || udf_imsource == "Old World")
 
-				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Poster Paper")
+				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Poster")
 				template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.00")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "material_posterpaper")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sort"], "0")
@@ -1082,11 +1090,10 @@ class TemplatesController < ApplicationController
 
 			end
 
-
 			
 			if udf_photopaper == "Y"
 
-				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Photo Paper")
+				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Paper")
 				template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.00")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "material_photopaper")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sort"], "1")
@@ -1168,6 +1175,10 @@ class TemplatesController < ApplicationController
 						alternate_size_line = $item_source_line[i_th_alt_size]
 						alternate_size = "#{$source.cell(alternate_size_line, $source_dictionary["UDF_IMAGE_SIZE_IN"])}"
 
+						if alternate_size.blank?
+							alternate_size = "#{$source.cell(alternate_size_line, $source_dictionary["UDF_PAPER_SIZE_IN"])}"
+						end
+
 						# Alternate size parameters: to be passed later in a dedicated function
 						size_name = "Poster Paper"
 						
@@ -1200,7 +1211,7 @@ class TemplatesController < ApplicationController
 
 			end
 
-			########## end of IF POSTER IS IN STOCK ####################
+			########## end of IF POSTER IS IN STOCK ####################			
 
 
 			########## IF UDF_PHOTOPAPER == Y ####################
@@ -1398,7 +1409,7 @@ class TemplatesController < ApplicationController
 					destination_line = destination_line + 1
 					
 
-					template.set(destination_line, $template_dictionary["_custom_option_row_title"], "3\" White Border")
+					template.set(destination_line, $template_dictionary["_custom_option_row_title"], "2\" White Border")
 					template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.0")
 					template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "border_treatment_3_inches_of_white")
 					template.set(destination_line, $template_dictionary["_custom_option_row_sort"], "1")
@@ -1406,14 +1417,14 @@ class TemplatesController < ApplicationController
 					destination_line = destination_line + 1
 
 
-					template.set(destination_line, $template_dictionary["_custom_option_row_title"], "2\" Black Border + 1\" White")
+					template.set(destination_line, $template_dictionary["_custom_option_row_title"], "2\" Black Border")
 					template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.0") 
 					template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "border_treatment_2_inches_of_black_and_1_inch_of_white")
 					template.set(destination_line, $template_dictionary["_custom_option_row_sort"], "2")
 
 					destination_line = destination_line + 1
 
-					template.set(destination_line, $template_dictionary["_custom_option_row_title"], "2\" Mirrored Border + 1\" White")
+					template.set(destination_line, $template_dictionary["_custom_option_row_title"], "2\" Mirrored Border")
 					template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.0")
 					template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "border_treatment_2_inches_mirrored_and_1_inch_of_white")
 					template.set(destination_line, $template_dictionary["_custom_option_row_sort"], "3")
@@ -1518,17 +1529,18 @@ class TemplatesController < ApplicationController
 						end
 
 						# Available for Canvas
-						if frame_for_canvas == "Y"
+						# Removed for now: framing is not available for canvas for now
+						#if frame_for_canvas == "Y"
 
-							template.set(destination_line, $template_dictionary["_custom_option_row_sku"], frame_item_number)
-							template.set(destination_line, $template_dictionary["_custom_option_row_title"], frame_name)
-							template.set(destination_line, $template_dictionary["_custom_option_row_price"], frame_ui_price.to_s)
-							template.set(destination_line, $template_dictionary["_custom_option_row_sort"], frame_count)
+						#	template.set(destination_line, $template_dictionary["_custom_option_row_sku"], frame_item_number)
+						#	template.set(destination_line, $template_dictionary["_custom_option_row_title"], frame_name)
+						#	template.set(destination_line, $template_dictionary["_custom_option_row_price"], frame_ui_price.to_s)
+						#	template.set(destination_line, $template_dictionary["_custom_option_row_sort"], frame_count)
 
-							destination_line = destination_line + 1
-							frame_count = frame_count + 1
+						#	destination_line = destination_line + 1
+						#	frame_count = frame_count + 1
 
-						end
+						#end
 
 					end
 
@@ -1541,7 +1553,7 @@ class TemplatesController < ApplicationController
 
 				########### MATTING ###########
 				template.set(destination_line, $template_dictionary["_custom_option_type"], "radio")
-				template.set(destination_line, $template_dictionary["_custom_option_title"], "Mats")
+				template.set(destination_line, $template_dictionary["_custom_option_title"], "Mat")
 				template.set(destination_line, $template_dictionary["_custom_option_is_required"], "1") 
 				template.set(destination_line, $template_dictionary["_custom_option_max_characters"], "0")
 				template.set(destination_line, $template_dictionary["_custom_option_sort_order"], "5")
@@ -1580,7 +1592,7 @@ class TemplatesController < ApplicationController
 				end
 
 				template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "mats_none")
-				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "No Mats")
+				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "No Mat")
 				template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.0")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sort"], mats_count)
 
