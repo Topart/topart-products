@@ -1,48 +1,48 @@
-1) Abstract/Geometric
-2) Abstract/Irregular
-3) Animals/Birds
-4) Animals/Butterflies
-5) Animals/Cats
-6) Animals/Dogs
-7) Animals/Dragonflies
-8) Animals/Fish
-9) Animals/Horses
-10) Animals/Land Animals
-11) Animals/Shells
-12) Animals/Water Animals
-13) Architecture/Bridges
-14) Architecture/Buildings
-15) Architecture/Elements
-16) Architecture/Furniture
-17) Architecture/Interiors
-18) Architecture/Plans
-19) Architecture/Sculptures & Statues
-20) Botanical/Abstract
-21) Botanical/Branches
-22) Botanical/Flowers
-23) Botanical/Gardens
-24) Botanical/Leaves
-25) Botanical/Palms
-26) Botanical/Plants
-27) Botanical/Trees
-28) Cuisine/Candy
-29) Cuisine/Drinks
-30) Cuisine/Flatware
-31) Cuisine/Food
-32) Cuisine/Fruits & Vegetables
-33) Dance/Ballet
-34) Dance/Ballroom
-35) Fashion/Men
-36) Fashion/Women
-37) Kids/Animals
-38) Kids/Books
-39) Kids/Entertainment
-40) Kids/Sports & Recreation
-41) Kids/Toys
-42) Landscape/Abstract
-43) Landscape/Beaches
-44) Landscape/Bridges
-45) Landscape/Cityscape
+1) (Photography(Color)/Photography(Color
+2) Abstract/Geometric
+3) Abstract/Irregular
+4) Animals/Birds
+5) Animals/Butterflies
+6) Animals/Cats
+7) Animals/Dogs
+8) Animals/Dragonflies
+9) Animals/Fish
+10) Animals/Horses
+11) Animals/Land Animals
+12) Animals/Shells
+13) Animals/Water Animals
+14) Architecture/Bridges
+15) Architecture/Buildings
+16) Architecture/Elements
+17) Architecture/Furniture
+18) Architecture/Interiors
+19) Architecture/Plans
+20) Architecture/Sculptures & Statues
+21) Botanical/Abstract
+22) Botanical/Branches
+23) Botanical/Flowers
+24) Botanical/Gardens
+25) Botanical/Leaves
+26) Botanical/Palms
+27) Botanical/Plants
+28) Botanical/Trees
+29) Cuisine/Candy
+30) Cuisine/Drinks
+31) Cuisine/Flatware
+32) Cuisine/Food
+33) Cuisine/Fruits & Vegetables
+34) Dance/Ballet
+35) Dance/Ballroom
+36) Fashion/Men
+37) Fashion/Women
+38) Kids/Animals
+39) Kids/Books
+40) Kids/Entertainment
+41) Kids/Sports & Recreation
+42) Kids/Toys
+43) Landscape/Abstract
+44) Landscape/Beaches
+45) Landscape/Bridges
 46) Landscape/Cityscapes
 47) Landscape/Coastal
 48) Landscape/Flowers
@@ -53,23 +53,23 @@
 53) Landscape/Mountains
 54) Landscape/Rivers
 55) Landscape/Scenic
-56) Landscape/Tropical
-57) Maps & Charts/Africa
-58) Maps & Charts/Asia
-59) Maps & Charts/Celestial
-60) Maps & Charts/Charts
-61) Maps & Charts/Crests
-62) Maps & Charts/Crowns
-63) Maps & Charts/Europe
-64) Maps & Charts/Flags
-65) Maps & Charts/North America
-66) Maps & Charts/World
-67) Museum Masters/Angels
-68) Museum Masters/Figurative
-69) Museum Masters/Flowers
-70) Museum Masters/Interiors
-71) Museum Masters/Landscape
-72) Museum Masters/Landscapes
+56) Landscape/Trees
+57) Landscape/Tropical
+58) Maps & Charts/Africa
+59) Maps & Charts/Asia
+60) Maps & Charts/Celestial
+61) Maps & Charts/Charts
+62) Maps & Charts/Crests
+63) Maps & Charts/Crowns
+64) Maps & Charts/Europe
+65) Maps & Charts/Flags
+66) Maps & Charts/North America
+67) Maps & Charts/World
+68) Museum Masters/Angels
+69) Museum Masters/Figurative
+70) Museum Masters/Flowers
+71) Museum Masters/Interiors
+72) Museum Masters/Landscape
 73) Museum Masters/Ponds
 74) Museum Masters/Still Life
 75) Music/Classical
@@ -84,45 +84,46 @@
 84) People/Figurative
 85) People/Models
 86) People/Nudes
-87) Places/European Union
-88) Places/Italy
-89) Places/New York City
-90) Places/North America
-91) Places/Paris
-92) Seasons/Autumn
-93) Seasons/Fall
-94) Seasons/Spring
-95) Seasons/Winter
-96) Sports & Recreation/Hobbies
-97) Sports & Recreation/Recreation
-98) Sports & Recreation/Sports
-99) Still Life/Baskets
-100) Still Life/Books
-101) Still Life/Clocks
-102) Still Life/Coat Of Arms
-103) Still Life/Crests
-104) Still Life/Crowns
-105) Still Life/Currency
-106) Still Life/Flowers
-107) Still Life/Miscellaneous
-108) Still Life/Shells
-109) Still Life/Shields
-110) Still Life/Tableware
-111) Still Life/Trunks
-112) Still Life/Urns
-113) Still Life/Vases
-114) Still/Urns
-115) Transportation/Airplanes
-116) Transportation/Boats
-117) Transportation/Cars
-118) Transportation/Motorcycles
-119) Transportation/Trains
-120) Words & Numbers
-121) Words & Numbers/Numbers
-122) Words & Numbers/Words
-123) Words & Numbers/Words & Numbers
-124) World Culture/Africa
-125) World Culture/Asia
-126) World Culture/Europe
-127) World Culture/Italy
-128) World Culture/North America
+87) Photography/Black & White
+88) Photography/Color
+89) Places/European Union
+90) Places/Italy
+91) Places/New York City
+92) Places/North America
+93) Places/Paris
+94) Seasons/Autumn
+95) Seasons/Fall
+96) Seasons/Spring
+97) Seasons/Winter
+98) Sports & Recreation/Hobbies
+99) Sports & Recreation/Recreation
+100) Sports & Recreation/Sports
+101) Still Life/Baskets
+102) Still Life/Books
+103) Still Life/Clocks
+104) Still Life/Coat Of Arms
+105) Still Life/Crests
+106) Still Life/Crowns
+107) Still Life/Currency
+108) Still Life/Flowers
+109) Still Life/Miscellaneous
+110) Still Life/Shells
+111) Still Life/Shields
+112) Still Life/Tableware
+113) Still Life/Trunks
+114) Still Life/Urns
+115) Still Life/Vases
+116) Transportation/Airplanes
+117) Transportation/Boats
+118) Transportation/Cars
+119) Transportation/Motorcycles
+120) Transportation/Trains
+121) Words & Numbers
+122) Words & Numbers/Numbers
+123) Words & Numbers/Words
+124) Words & Numbers/Words & Numbers
+125) World Culture/Africa
+126) World Culture/Asia
+127) World Culture/Europe
+128) World Culture/Italy
+129) World Culture/North America

@@ -2,6 +2,19 @@ require 'rubygems'
 require 'roo'
 require 'ruby-prof'
 
+class Reference
+    def initialize(var_name, vars)
+      @getter = eval "lambda { #{var_name} }", vars
+      @setter = eval "lambda { |v| #{var_name} = v }", vars
+    end
+    def value
+      @getter.call
+    end
+    def value=(new_value)
+      @setter.call(new_value)
+    end
+  end
+
 class TemplatesController < ApplicationController
 
 
@@ -74,23 +87,23 @@ class TemplatesController < ApplicationController
 		if (x != 0)
 
 			if (x < 30) 
-				return "Petite"
+				return "XS"
 			end
 
 			if (x >= 30 and x <  40)
-				return "Small"
+				return "S"
 			end
 
 			if (x >= 40 and x < 50)
-				return "Medium"
+				return "M"
 			end
 
 			if (x >= 50 and x < 60)
-				return "Large"
+				return "L"
 			end
 
 			if (x >= 60)
-				return "Oversize"
+				return "XL"
 			end
 		
 		end
@@ -98,6 +111,14 @@ class TemplatesController < ApplicationController
 		return ""
 
 	end
+
+	def ref(&block)
+    	Reference.new(block.call, block.binding)
+  	end
+
+	def swap(aref, bref)
+    	aref.value, bref.value = bref.value, aref.value
+ 	end
 
 
 	# GET /generate_template
@@ -167,7 +188,7 @@ class TemplatesController < ApplicationController
 		# MATERIAL -> CANVAS
 		# Automatically scan the source column names and store them in an associative array
 		$retail_canvas_dictionary = Hash.new
-		"A".upto("AO") do |alphabet_character|
+		"A".upto("AR") do |alphabet_character|
 			cell_content = "#{$retail_canvas.cell(1, alphabet_character)}"
 			$retail_canvas_dictionary[cell_content] = alphabet_character
 		end
@@ -192,7 +213,7 @@ class TemplatesController < ApplicationController
 
 			primary_vendor_no = "#{$source.cell(source_line, $source_dictionary["PrimaryVendorNo"])}"
 
-			if primary_vendor_no == "F21066"
+			if primary_vendor_no == "F21066" or primary_vendor_no == "S73068"
 				$retail_framing_table[i] = Hash.new
 
 				# Store all the MAS specific fields, which means the majority of them
@@ -306,7 +327,7 @@ class TemplatesController < ApplicationController
 		end
 
 
-		#pre_process_alternate_sizes(2, 12800)
+		#pre_process_alternate_sizes(2, 9600)
 
 		t1 = Thread.new{parallel_write(2, $source.last_row)}
 		#t1 = Thread.new{parallel_write(2, 10)}
@@ -365,8 +386,9 @@ class TemplatesController < ApplicationController
 			# Skip importing the framing related items
 			if primary_vendor_no == "F21066"
 
-				source_line = source_line + 1
-				next
+				#source_line = source_line + 1
+				#next
+				source_line = 9998
 			end
 
 			item_code = "#{$source.cell(source_line, $source_dictionary["Item Code"])}"
@@ -1081,7 +1103,12 @@ class TemplatesController < ApplicationController
 			# Each material option is displayed according to the corresponding udf values
 			if udf_entity_type == "Poster" and ( ((udf_imsource == "San Diego" || udf_imsource == "Italy") and total_quantity_on_hand > -1) || udf_imsource == "Old World")
 
-				template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Poster")
+				if udf_limited == "Y"
+					template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Art Paper")
+				else
+					template.set(destination_line, $template_dictionary["_custom_option_row_title"], "Poster")
+				end
+
 				template.set(destination_line, $template_dictionary["_custom_option_row_price"], "0.00")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "material_posterpaper")
 				template.set(destination_line, $template_dictionary["_custom_option_row_sort"], "0")
@@ -1280,8 +1307,33 @@ class TemplatesController < ApplicationController
 							if allowed_size == "true"
 
 								size_price = "#{$retail_photo_paper.cell(i, $retail_photo_paper_dictionary["Rolled Paper - Estimated Retail"])}" 
-								size_photopaper_length = "#{$retail_photo_paper.cell(i, $retail_photo_paper_dictionary["Length"])}".to_i.to_s
-								size_photopaper_width = "#{$retail_photo_paper.cell(i, $retail_photo_paper_dictionary["Width"])}".to_i.to_s
+								size_photopaper_length = "#{$retail_photo_paper.cell(i, $retail_photo_paper_dictionary["Length"])}".to_i
+								size_photopaper_width = "#{$retail_photo_paper.cell(i, $retail_photo_paper_dictionary["Width"])}".to_i
+
+								orientation = udf_orientation.downcase
+								if orientation == "landscape"
+									if size_photopaper_width < size_photopaper_length
+										
+										temp = size_photopaper_width
+										size_photopaper_width = size_photopaper_length
+										size_photopaper_length = temp
+
+									end
+
+								elsif orientation == "portrait"
+									if size_photopaper_width > size_photopaper_length
+										
+										temp = size_photopaper_width
+										size_photopaper_width = size_photopaper_length
+										size_photopaper_length = temp
+
+									end
+								else
+									# Do nothing, Square Images are set already
+								end
+
+								size_photopaper_width = size_photopaper_width.to_s
+								size_photopaper_length = size_photopaper_length.to_s
 
 								template.set(destination_line, $template_dictionary["_custom_option_row_title"], size_name + ": " + size_photopaper_width + "\""  + "x" + size_photopaper_length + "\"")
 								template.set(destination_line, $template_dictionary["_custom_option_row_price"], size_price)
@@ -1318,14 +1370,15 @@ class TemplatesController < ApplicationController
 
 					retail_ratio_dec = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["Decimal Ratio"])}".to_f
 					image_source = "#{$retail_photo_paper.cell(i, $retail_photo_paper_dictionary["Image Source"])}"
-					image_length = "#{$retail_photo_paper.cell(i, $retail_photo_paper_dictionary["Length"])}".to_f
-					image_width = "#{$retail_photo_paper.cell(i, $retail_photo_paper_dictionary["Width"])}".to_f
+					
+					size_canvas_length_1 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["WH_Length"])}".to_i
+					size_canvas_width_1 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["WH_Width"])}".to_i
 
 					short_side = 0
-					if image_length < image_width
-						short_side = image_length
+					if size_canvas_length_1 < size_canvas_width_1
+						short_side = size_canvas_length_1
 					else
-						short_side = image_width
+						short_side = size_canvas_width_1
 					end
 					
 					count = 0
@@ -1333,7 +1386,13 @@ class TemplatesController < ApplicationController
 					# Check for available sizes and border treatments prices
 					if udf_ratio_dec == retail_ratio_dec and udf_imsource == image_source and (udf_maxsfin.blank? or short_side <= udf_maxsfin)
 
-						size_name = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["Size Description"])}"	
+						size_name = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["Size Description"])}"
+
+						size_canvas_length_2 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["BL_Length"])}".to_i
+						size_canvas_width_2 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["BL_Width"])}".to_i
+						
+						size_canvas_length_3 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["MR_Length"])}".to_i
+						size_canvas_width_3 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["MR_Width"])}".to_i
 
 						allowed_size = "false"
 							
@@ -1351,17 +1410,59 @@ class TemplatesController < ApplicationController
 							size_price_treatment_2 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary['Rolled Canvas 2" Black Border - Estimated Retail'])}"
 							size_price_treatment_3 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary['Rolled Canvas 2" Mirror Border -  Estimated Retail'])}"
 
-							size_canvas_length = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["Length"])}".to_i.to_s
-							size_canvas_width = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["Width"])}".to_i.to_s
-							
+							size_canvas_ui_1 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["WH_UI"])}".to_i
+							size_canvas_ui_2 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["BL_UI"])}".to_i
+							size_canvas_ui_3 = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["MR_UI"])}".to_i
+
+							orientation = udf_orientation.downcase
+							if orientation == "landscape"
+								if size_canvas_width_1 < size_canvas_length_1
+									
+									swap(ref{:size_canvas_width_1}, ref{:size_canvas_length_1})
+									swap(ref{:size_canvas_width_2}, ref{:size_canvas_length_2})
+									swap(ref{:size_canvas_width_3}, ref{:size_canvas_length_3})
+
+								end
+
+							elsif orientation == "portrait"
+								if size_canvas_width_1 > size_canvas_length_1
+									
+									swap(ref{:size_canvas_width_1}, ref{:size_canvas_length_1})
+									swap(ref{:size_canvas_width_2}, ref{:size_canvas_length_2})
+									swap(ref{:size_canvas_width_3}, ref{:size_canvas_length_3})
+
+								end
+							else
+								# Do nothing, Square Images are set already
+							end
+
+							size_canvas_width_1 = size_canvas_width_1.to_s
+							size_canvas_length_1 = size_canvas_length_1.to_s
+
+							size_canvas_width_2 = size_canvas_width_2.to_s
+							size_canvas_length_2 = size_canvas_length_2.to_s
+
+							size_canvas_width_3 = size_canvas_width_3.to_s
+							size_canvas_length_3 = size_canvas_length_3.to_s
+						
+
 							size_prices = Array.new
 							size_prices << size_price_treatment_1 << size_price_treatment_2 << size_price_treatment_3
-							size_canvas_ui = "#{$retail_canvas.cell(i, $retail_canvas_dictionary["UI"])}".to_i
+
+							size_canvas_width = Array.new
+							size_canvas_width << size_canvas_width_1 << size_canvas_width_2 << size_canvas_width_3
+
+							size_canvas_length = Array.new
+							size_canvas_length << size_canvas_length_1 << size_canvas_length_2 << size_canvas_length_3
+
+							size_canvas_ui = Array.new
+							size_canvas_ui << size_canvas_ui_1 << size_canvas_ui_2 << size_canvas_ui_3
+							
 
 
 							0.upto(2) do |count|
 
-								template.set(destination_line, $template_dictionary["_custom_option_row_title"], size_name + ": " + size_canvas_width + "\""  + "x" + size_canvas_length + "\"")
+								template.set(destination_line, $template_dictionary["_custom_option_row_title"], size_name + ": " + size_canvas_width[count] + "\""  + "x" + size_canvas_length[count] + "\"")
 								template.set(destination_line, $template_dictionary["_custom_option_row_price"], size_prices[count])
 
 								if size_name.downcase == "oversize large"
@@ -1369,7 +1470,7 @@ class TemplatesController < ApplicationController
 								end
 
 								#_custom_option_row_sku
-								template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "size_canvas_" + size_name.downcase + "_treatment_" + (count+1).to_s + "_ui_" + size_canvas_ui.to_s + "_width_" + size_canvas_width.to_s + "_length_" + size_canvas_length.to_s)
+								template.set(destination_line, $template_dictionary["_custom_option_row_sku"], "size_canvas_" + size_name.downcase + "_treatment_" + (count+1).to_s + "_ui_" + size_canvas_ui[count].to_s + "_width_" + size_canvas_width[count].to_s + "_length_" + size_canvas_length[count].to_s)
 								#_custom_option_row_sort
 								template.set(destination_line, $template_dictionary["_custom_option_row_sort"], match_index + count)
 
@@ -1452,7 +1553,7 @@ class TemplatesController < ApplicationController
 						
 						stretching_index = 0
 
-						template.set(destination_line, $template_dictionary["_custom_option_row_title"], "1.5\" Gallery Wrap Stretching")
+						template.set(destination_line, $template_dictionary["_custom_option_row_title"], "1.5\" Canvas Gallery Stretching")
 						template.set(destination_line, $template_dictionary["_custom_option_row_price"], stretch_ui_price.to_s) 
 						template.set(destination_line, $template_dictionary["_custom_option_row_sku"], stretch_item_number)
 						template.set(destination_line, $template_dictionary["_custom_option_row_sort"], stretching_index)

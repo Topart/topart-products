@@ -23,10 +23,10 @@ class TemplatesController < ApplicationController
 		#while source_line <= 31
 				
 			
-			# Subjects BF, Aritsts B, Collections BU
-			@udf_prisubnsubcat = "#{source.cell(source_line, "B")}"
+			# Subjects BF, Artists B, Collections BU
 			#@udf_prisubnsubcat = "#{source.cell(source_line, "BF")}"
-			#@udf_prisubnsubcat = "#{source.cell(source_line, "BU")}"
+			#@udf_prisubnsubcat = "#{source.cell(source_line, "B")}"
+			@udf_prisubnsubcat = "#{source.cell(source_line, "BU")}"
 			
 
 			# Category structure: categories and subcategories
@@ -102,10 +102,10 @@ class TemplatesController < ApplicationController
   				top_level_category = row
   			end
 
-  			# Sujbects 351, Collections 9, Artists 71
+  			# Subjects 351, Collections 9, Artists 71
   			#category_list.set(@category_counter, "A", "351")
-  			#category_list.set(@category_counter, "A", "9")
-  			category_list.set(@category_counter, "A", "71")
+  			category_list.set(@category_counter, "A", "9")
+  			#category_list.set(@category_counter, "A", "71")
   			category_list.set(@category_counter, "B", top_level_category)
   			#category_list.set(@category_counter, "C", second_level_category)
 
