@@ -327,7 +327,7 @@ class TemplatesController < ApplicationController
 		end
 
 
-		#pre_process_alternate_sizes(2, 9600)
+		#pre_process_alternate_sizes(2, 10400)
 
 		t1 = Thread.new{parallel_write(2, $source.last_row)}
 		#t1 = Thread.new{parallel_write(2, 10)}
@@ -387,8 +387,12 @@ class TemplatesController < ApplicationController
 			if primary_vendor_no == "F21066"
 
 				#source_line = source_line + 1
-				#next
-				source_line = 9998
+				p "skipping line "
+				p source_line
+
+				source_line = source_line + 1
+				next
+				#source_line = 9998
 			end
 
 			item_code = "#{$source.cell(source_line, $source_dictionary["Item Code"])}"
