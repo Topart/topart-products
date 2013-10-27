@@ -24,54 +24,61 @@ class TemplatesController < ApplicationController
 				
 			
 			# Subjects BF, Artists B, Collections BU
-			#@udf_prisubnsubcat = "#{source.cell(source_line, "BF")}"
-			#@udf_prisubnsubcat = "#{source.cell(source_line, "B")}"
-			@udf_prisubnsubcat = "#{source.cell(source_line, "BU")}"
+			@source_column = "B"
+			@udf_prisubnsubcat = "#{source.cell(source_line, @source_column)}"
 			
+			if @source_column != "B"
+				# Category structure: categories and subcategories
+				# Example: x(a;b;c).y.z(f).
+				@category_array = @udf_prisubnsubcat.split(".")
 
-			# Category structure: categories and subcategories
-			# Example: x(a;b;c).y.z(f).
-			@category_array = @udf_prisubnsubcat.split(".")
+				0.upto(@category_array.size-1) do |i|
 
-			0.upto(@category_array.size-1) do |i|
+					@open_brace_index = @category_array[i].index("(")
+					@close_brace_index = @category_array[i].index(")")
+					
+					# Category name
+					if @open_brace_index != nil
+						@category_name = @category_array[i][0..@open_brace_index-1]
 
-				@open_brace_index = @category_array[i].index("(")
-				@close_brace_index = @category_array[i].index(")")
-				
-				# Category name
-				if @open_brace_index != nil
-					@category_name = @category_array[i][0..@open_brace_index-1]
+						# Subcategory list
+						@subcategory_array = @category_array[i][@open_brace_index+1..@close_brace_index-1].split(";")
 
-					# Subcategory list
-					@subcategory_array = @category_array[i][@open_brace_index+1..@close_brace_index-1].split(";")
+						0.upto(@subcategory_array.size-1) do |j|
 
-					0.upto(@subcategory_array.size-1) do |j|
+							# This if block is only used once to comput the unique list of categories/subcategories
+							if !@written_categories.include?(@category_name + "/" + @subcategory_array[j].titleize)
+							#if !@written_categories.include?(@category_name)
+							#if !@written_categories.include?(@subcategory_array[j])
+								#p @category_name + "/" + @subcategory_array[j].titleize
+								@written_categories << (@category_name + "/" + @subcategory_array[j].titleize)
+								#@written_categories << (@category_name)
+								#@written_categories << (@subcategory_array[j])
+
+								#p @category_name + " -" + source_line.to_s
+							end
+
+						end
+					else
+
+						@category_name = @category_array[i][0..@category_array[i].length-1]
 
 						# This if block is only used once to comput the unique list of categories/subcategories
-						if !@written_categories.include?(@category_name + "/" + @subcategory_array[j].titleize)
-						#if !@written_categories.include?(@category_name)
-						#if !@written_categories.include?(@subcategory_array[j])
-							#p @category_name + "/" + @subcategory_array[j].titleize
-							@written_categories << (@category_name + "/" + @subcategory_array[j].titleize)
-							#@written_categories << (@category_name)
-							#@written_categories << (@subcategory_array[j])
+						if !@written_categories.include?(@category_name)
+							#p @category_name
+							@written_categories << @category_name
 
-							#p @category_name + " -" + source_line.to_s
+							#p @category_name + " - " + source_line.to_s
 						end
 
 					end
-				else
 
-					@category_name = @category_array[i][0..@category_array[i].length-1]
+				end
 
-					# This if block is only used once to comput the unique list of categories/subcategories
-					if !@written_categories.include?(@category_name)
-						#p @category_name
-						@written_categories << @category_name
+			else
 
-						#p @category_name + " - " + source_line.to_s
-					end
-
+				if !@written_categories.include?(@udf_prisubnsubcat)
+					@written_categories << @udf_prisubnsubcat
 				end
 
 			end
@@ -102,10 +109,10 @@ class TemplatesController < ApplicationController
   				top_level_category = row
   			end
 
-  			# Subjects 351, Collections 9, Artists 71
+  			# Subjects 351, Collections 9, Artists 1580 (71 on dev)
   			#category_list.set(@category_counter, "A", "351")
-  			category_list.set(@category_counter, "A", "9")
-  			#category_list.set(@category_counter, "A", "71")
+  			#category_list.set(@category_counter, "A", "9")
+  			category_list.set(@category_counter, "A", "1580")
   			category_list.set(@category_counter, "B", top_level_category)
   			#category_list.set(@category_counter, "C", second_level_category)
 

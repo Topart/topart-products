@@ -327,9 +327,9 @@ class TemplatesController < ApplicationController
 		end
 
 
-		#pre_process_alternate_sizes(2, 10400)
+		pre_process_alternate_sizes(2, 14400)
 
-		t1 = Thread.new{parallel_write(2, $source.last_row)}
+		t1 = Thread.new{parallel_write(14402, $source.last_row)}
 		#t1 = Thread.new{parallel_write(2, 10)}
 		#t1 = Thread.new{parallel_write(9020, 9030)}
 		#t1 = Thread.new{parallel_write(2, 51)}
